@@ -2,6 +2,8 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ScrollStack.css';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -336,6 +338,8 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
+    gsap.registerPlugin(ScrollTrigger);
+
     const cards = Array.from(
       useWindowScroll
         ? document.querySelectorAll('.scroll-stack-card')
@@ -360,35 +364,55 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       card.style.setProperty('-webkit-perspective', '1000px');
     });
 
-    // Calculate the scroll position where the last card finishes stacking
-    let lastCardPinStart = 0;
-    if (cards.length > 0) {
-      const lastCard = cards[cards.length - 1];
-      if (lastCard) {
-        const containerHeight = scroller.clientHeight;
-        
-        let stackPositionPx = 0;
-        if (typeof stackPosition === 'string' && stackPosition.includes('%')) {
-          stackPositionPx = (parseFloat(stackPosition) / 100) * containerHeight;
-        } else {
-          stackPositionPx = parseFloat(stackPosition as string);
-        }
+    const recalculateHeights = () => {
+      const currentScroller = scrollerRef.current;
+      if (!currentScroller) return;
 
-        const cardTop = lastCard.offsetTop;
-        lastCardPinStart = cardTop - stackPositionPx - itemStackDistance * (cards.length - 1);
-        
-        // Dynamically adjust the inner container height so the scroll limit is exactly lastCardPinStart
-        const inner = scroller.querySelector<HTMLElement>('.scroll-stack-inner');
-        if (inner && !useWindowScroll) {
-          inner.style.height = `${containerHeight + lastCardPinStart}px`;
+      const currentCards = cardsRef.current;
+      if (currentCards.length > 0) {
+        const lastCard = currentCards[currentCards.length - 1];
+        if (lastCard) {
+          const containerHeight = currentScroller.clientHeight;
+          if (containerHeight === 0) return; // Wait for element to have physical layout height
+
+          let stackPositionPx = 0;
+          if (typeof stackPosition === 'string' && stackPosition.includes('%')) {
+            stackPositionPx = (parseFloat(stackPosition) / 100) * containerHeight;
+          } else {
+            stackPositionPx = parseFloat(stackPosition as string);
+          }
+
+          const cardTop = lastCard.offsetTop;
+          const lastCardPinStart = cardTop - stackPositionPx - itemStackDistance * (currentCards.length - 1);
+          
+          // Dynamically adjust the inner container height so the scroll limit is exactly lastCardPinStart
+          const inner = currentScroller.querySelector<HTMLElement>('.scroll-stack-inner');
+          if (inner && !useWindowScroll) {
+            inner.style.height = `${containerHeight + lastCardPinStart}px`;
+          }
         }
       }
-    }
+      updateCardTransforms();
+      ScrollTrigger.refresh();
+    };
+
+    // Recalculate heights initially
+    recalculateHeights();
+
+    // Use ResizeObserver to automatically recalculate height whenever dimensions change
+    // (e.g. hydration completes, web fonts load, parent container resizes, etc.)
+    const resizeObserver = new ResizeObserver(() => {
+      recalculateHeights();
+    });
+    resizeObserver.observe(scroller);
+    cards.forEach((card) => {
+      resizeObserver.observe(card);
+    });
 
     setupLenis();
-    updateCardTransforms();
 
     return () => {
+      resizeObserver.disconnect();
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
