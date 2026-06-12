@@ -6,7 +6,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import TiltedCard from "@/components/ui/TiltedCard";
 
-export default function EarthyHero() {
+interface EarthyHeroProps {
+  revealed?: boolean;
+}
+
+export default function EarthyHero({ revealed = false }: EarthyHeroProps) {
   const title1 = "STUDY";
   const title2 = "COACH";
 
@@ -69,18 +73,9 @@ export default function EarthyHero() {
   const scrollToSection = (targetId: string) => {
     const el = document.getElementById(targetId);
     if (el) {
-      if (typeof window !== "undefined") {
-        gsap.registerPlugin(ScrollTrigger);
-        const tempTrigger = ScrollTrigger.create({
-          trigger: el,
-          start: "top top",
-        });
-        const targetScroll = tempTrigger.start;
-        tempTrigger.kill();
-        window.scrollTo({
-          top: targetScroll,
-          behavior: "smooth",
-        });
+      const lenis = window.lenis;
+      if (lenis) {
+        lenis.scrollTo(el);
       } else {
         el.scrollIntoView({ behavior: "smooth" });
       }
@@ -100,7 +95,7 @@ export default function EarthyHero() {
         style={{ backgroundColor: "#ccd5ae", transformOrigin: "bottom left" }}
       >
         
-        {/* Hero Centerpiece: Massive 'Anton' text (15vw-19vw) with letter reveal animation (Background layer z-10) */}
+        {/* Hero Centerpiece: Massive 'Anton' text */}
         <div className="flex-grow flex flex-col justify-center items-center py-12 relative z-10">
           <h1 
             className="font-display text-[15vw] sm:text-[17vw] md:text-[19vw] leading-[0.85] tracking-[-0.05em] text-center select-none"
@@ -111,10 +106,8 @@ export default function EarthyHero() {
               {title1.split("").map((char, index) => (
                 <span
                   key={`t1-${index}`}
-                  className="animate-reveal-letter"
-                  style={{
-                    animationDelay: `${index * 0.05}s`,
-                  }}
+                  className={revealed ? "animate-reveal-letter" : "opacity-0"}
+                  style={revealed ? { animationDelay: `${index * 0.05}s` } : {}}
                 >
                   {char}
                 </span>
@@ -126,10 +119,8 @@ export default function EarthyHero() {
                 <span
                   key={`t2-${index}`}
                   ref={index === 2 ? letterARef : undefined}
-                  className="animate-reveal-letter inline-block"
-                  style={{
-                    animationDelay: `${(title1.length + index) * 0.05}s`,
-                  }}
+                  className={revealed ? "animate-reveal-letter inline-block" : "opacity-0 inline-block"}
+                  style={revealed ? { animationDelay: `${(title1.length + index) * 0.05}s` } : {}}
                 >
                   {char}
                 </span>
@@ -143,7 +134,8 @@ export default function EarthyHero() {
         {/* Top-Left: AI Study Plan */}
         <div 
           onClick={() => scrollToSection("cycle")}
-          className="absolute top-[8%] left-[2%] md:top-[13%] md:left-[4%] lg:left-[8%] z-30 animate-float-1 select-none cursor-pointer hidden md:block w-[190px] h-[170px] md:w-[250px] md:h-[220px] lg:w-[280px] lg:h-[250px]"
+          className="absolute top-[8%] left-[2%] md:top-[13%] md:left-[4%] lg:left-[8%] z-30 animate-float-1 select-none cursor-pointer hidden md:block w-[190px] h-[170px] md:w-[250px] md:h-[220px] lg:w-[280px] lg:h-[250px] transition-opacity duration-700"
+          style={{ opacity: revealed ? 1 : 0, transitionDelay: revealed ? "0.25s" : "0s" }}
         >
           <div
             className="w-full h-full"
@@ -214,7 +206,8 @@ export default function EarthyHero() {
         {/* Top-Right: Progress Analytics Dashboard */}
         <div 
           onClick={() => scrollToSection("counsels")}
-          className="absolute top-[10%] right-[2%] md:top-[15%] md:right-[4%] lg:right-[8%] z-30 animate-float-2 select-none cursor-pointer hidden md:block w-[200px] h-[160px] md:w-[260px] md:h-[210px] lg:w-[290px] lg:h-[240px]"
+          className="absolute top-[10%] right-[2%] md:top-[15%] md:right-[4%] lg:right-[8%] z-30 animate-float-2 select-none cursor-pointer hidden md:block w-[200px] h-[160px] md:w-[260px] md:h-[210px] lg:w-[290px] lg:h-[240px] transition-opacity duration-700"
+          style={{ opacity: revealed ? 1 : 0, transitionDelay: revealed ? "0.35s" : "0s" }}
         >
           <div
             className="w-full h-full"
@@ -284,7 +277,8 @@ export default function EarthyHero() {
         {/* Bottom-Left: Smart Quiz Generator */}
         <div 
           onClick={() => scrollToSection("features")}
-          className="absolute bottom-[14%] left-[1.5%] md:bottom-[20%] md:left-[3%] lg:left-[7%] z-30 animate-float-3 select-none cursor-pointer hidden md:block w-[195px] h-[170px] md:w-[255px] md:h-[220px] lg:w-[285px] lg:h-[250px]"
+          className="absolute bottom-[14%] left-[1.5%] md:bottom-[20%] md:left-[3%] lg:left-[7%] z-30 animate-float-3 select-none cursor-pointer hidden md:block w-[195px] h-[170px] md:w-[255px] md:h-[220px] lg:w-[285px] lg:h-[250px] transition-opacity duration-700"
+          style={{ opacity: revealed ? 1 : 0, transitionDelay: revealed ? "0.45s" : "0s" }}
         >
           <div
             className="w-full h-full"
@@ -347,7 +341,8 @@ export default function EarthyHero() {
         {/* Bottom-Right: Exam Readiness Score */}
         <div 
           onClick={() => scrollToSection("access")}
-          className="absolute bottom-[12%] right-[1.5%] md:bottom-[18%] md:right-[3%] lg:right-[7%] z-30 animate-float-4 select-none cursor-pointer hidden md:block w-[180px] h-[150px] md:w-[240px] md:h-[190px] lg:w-[270px] lg:h-[220px]"
+          className="absolute bottom-[12%] right-[1.5%] md:bottom-[18%] md:right-[3%] lg:right-[7%] z-30 animate-float-4 select-none cursor-pointer hidden md:block w-[180px] h-[150px] md:w-[240px] md:h-[190px] lg:w-[270px] lg:h-[220px] transition-opacity duration-700"
+          style={{ opacity: revealed ? 1 : 0, transitionDelay: revealed ? "0.55s" : "0s" }}
         >
           <div
             className="w-full h-full"
@@ -409,12 +404,14 @@ export default function EarthyHero() {
           </div>
         </div>
 
-        {/* Interactive 3D Robot Spline (Midground layer z-20, stuck to the bottom of the screen) */}
+        {/* Interactive 3D Robot Spline */}
         <div 
-          className="absolute bottom-0 left-0 right-0 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] z-20 pointer-events-auto earthy-robot-filter"
+          className="absolute bottom-0 left-0 right-0 h-[60vh] sm:h-[70vh] md:h-[75vh] lg:h-[80vh] z-20 pointer-events-auto earthy-robot-filter transition-opacity duration-700"
           style={{
             transform: `scale(0.8) translateX(${robotOffset}px) translateY(6vh)`,
             transformOrigin: "bottom center",
+            opacity: revealed ? 1 : 0,
+            transitionDelay: revealed ? "0.1s" : "0s",
           }}
         >
           <InteractiveRobotSpline

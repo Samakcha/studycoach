@@ -22,7 +22,7 @@ export default function EarthyFooter() {
               className="font-display text-[12vw] md:text-[10vw] leading-none tracking-tight uppercase"
               style={{ color: "#fefae0" }}
             >
-              -STUDYCOACH
+              STUDYCOACH
             </h2>
           </EarthyScrollReveal>
 
@@ -38,7 +38,12 @@ export default function EarthyFooter() {
                 href="#hero" 
                 onClick={(e) => {
                   e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  const lenis = window.lenis;
+                  if (lenis) {
+                    lenis.scrollTo(0);
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
                 }}
                 className="hover:text-[#fefae0] transition-colors duration-300"
                 style={{ color: "#ccd5ae" }}
@@ -49,7 +54,12 @@ export default function EarthyFooter() {
                 href="#hero" 
                 onClick={(e) => {
                   e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  const lenis = window.lenis;
+                  if (lenis) {
+                    lenis.scrollTo(0);
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
                 }}
                 className="hover:text-[#fefae0] transition-colors duration-300"
                 style={{ color: "#ccd5ae" }}
@@ -60,7 +70,12 @@ export default function EarthyFooter() {
                 href="#hero" 
                 onClick={(e) => {
                   e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  const lenis = window.lenis;
+                  if (lenis) {
+                    lenis.scrollTo(0);
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
                 }}
                 className="hover:text-[#fefae0] transition-colors duration-300"
                 style={{ color: "#ccd5ae" }}

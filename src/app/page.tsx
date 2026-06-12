@@ -9,13 +9,18 @@ import EarthyPersonas from "@/components/EarthyPersonas";
 import EarthyCTA from "@/components/EarthyCTA";
 import EarthyFooter from "@/components/EarthyFooter";
 import FlowArt from "@/components/ui/story-scroll";
+import Preloader from "@/components/Preloader";
 
 export default function Home() {
   const [cartCount, setCartCount] = useState(0);
+  const [heroRevealed, setHeroRevealed] = useState(false);
 
   return (
     <div className="relative min-h-screen flex flex-col antialiased selection:bg-forest selection:text-cream">
-      
+
+      {/* Green preload screen — exits before hero animates in */}
+      <Preloader onComplete={() => setHeroRevealed(true)} />
+
       {/* Persistent SVG Noise Overlay (4% opacity) */}
       <div className="pointer-events-none fixed inset-0 z-[999] opacity-[0.04] select-none">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -37,7 +42,7 @@ export default function Home() {
       {/* Main stacked sections */}
       <main className="flex-grow">
         <FlowArt>
-          <EarthyHero />
+          <EarthyHero revealed={heroRevealed} />
           <EarthyFeatures onAddToCart={() => setCartCount((prev) => prev + 1)} />
           <EarthyCycle />
           <EarthyPersonas />
@@ -46,10 +51,9 @@ export default function Home() {
         </FlowArt>
       </main>
 
-
-
     </div>
   );
 }
+
 
 

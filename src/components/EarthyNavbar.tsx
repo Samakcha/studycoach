@@ -26,11 +26,18 @@ export default function EarthyNavbar({ cartCount }: EarthyNavbarProps) {
         
         {/* Left: Logo in bold uppercase with hyphen prefix */}
         <div 
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() => {
+            const lenis = window.lenis;
+            if (lenis) {
+              lenis.scrollTo(0);
+            } else {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
           className="font-display text-xl md:text-2xl text-forest font-bold tracking-tight cursor-pointer hover:opacity-80 transition-opacity pointer-events-auto"
           style={{ color: "#01472e" }}
         >
-          -STUDYCOACH
+          STUDYCOACH
         </div>
 
         {/* Right: Start Now CTA button in a white pill */}
@@ -43,18 +50,9 @@ export default function EarthyNavbar({ cartCount }: EarthyNavbarProps) {
             onClick={() => {
               const el = document.getElementById("access");
               if (el) {
-                if (typeof window !== "undefined") {
-                  gsap.registerPlugin(ScrollTrigger);
-                  const tempTrigger = ScrollTrigger.create({
-                    trigger: el,
-                    start: "top top",
-                  });
-                  const targetScroll = tempTrigger.start;
-                  tempTrigger.kill();
-                  window.scrollTo({
-                    top: targetScroll,
-                    behavior: "smooth",
-                  });
+                const lenis = window.lenis;
+                if (lenis) {
+                  lenis.scrollTo(el);
                 } else {
                   el.scrollIntoView({ behavior: "smooth" });
                 }

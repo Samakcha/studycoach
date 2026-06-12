@@ -560,13 +560,21 @@ export default function EarthyPersonas() {
   const targetScroll = useRef(0);
   const [activeStep, setActiveStep] = useState(0);
 
-  // Wheel scroll-catching for desktop
+  // Tell Lenis to not interfere with the inner scroller element
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    // Mark element so Lenis skips it
+    scroller.setAttribute("data-lenis-prevent", "");
+    return () => scroller.removeAttribute("data-lenis-prevent");
+  }, []);
+
+  // Wheel scroll-catching for desktop — routes wheel events into the inner scroller
   useEffect(() => {
     const container = containerRef.current;
     const scroller = scrollerRef.current;
     if (!container || !scroller) return;
 
-    // Initialize target scroll
     targetScroll.current = scroller.scrollTop;
 
     const handleWheel = (e: WheelEvent) => {
@@ -578,38 +586,30 @@ export default function EarthyPersonas() {
       const clientHeight = scroller.clientHeight;
       const maxScroll = scrollHeight - clientHeight;
 
-      // Sync if desynced (e.g., if scrolled by mouse drag or system events)
+      // Sync if desynced
       if (Math.abs(targetScroll.current - scrollTop) > 100) {
         targetScroll.current = scrollTop;
       }
 
       const nextScroll = Math.max(0, Math.min(targetScroll.current + e.deltaY, maxScroll));
-
       const isScrollingDown = e.deltaY > 0;
       const isScrollingUp = e.deltaY < 0;
-
       let shouldPrevent = false;
 
-      if (isScrollingDown) {
-        if (scrollTop + clientHeight < scrollHeight - 5) {
-          shouldPrevent = true;
-        }
-      } else if (isScrollingUp) {
-        if (scrollTop > 5) {
-          shouldPrevent = true;
-        }
+      if (isScrollingDown && scrollTop + clientHeight < scrollHeight - 5) {
+        shouldPrevent = true;
+      } else if (isScrollingUp && scrollTop > 5) {
+        shouldPrevent = true;
       }
 
       if (shouldPrevent) {
         targetScroll.current = nextScroll;
-        
         gsap.to(scroller, {
           scrollTop: nextScroll,
           duration: 0.35,
           ease: "power2.out",
           overwrite: "auto",
         });
-        
         e.preventDefault();
       } else {
         targetScroll.current = scrollTop;
@@ -617,12 +617,10 @@ export default function EarthyPersonas() {
     };
 
     container.addEventListener("wheel", handleWheel, { passive: false });
-    return () => {
-      container.removeEventListener("wheel", handleWheel);
-    };
+    return () => container.removeEventListener("wheel", handleWheel);
   }, []);
 
-  // GSAP ScrollTrigger to track active step cards
+  // GSAP ScrollTrigger to track active step cards inside inner scroller
   useGSAP(
     () => {
       if (!scrollerRef.current) return;
@@ -668,7 +666,7 @@ export default function EarthyPersonas() {
         className="flow-art-container relative flex h-full w-full flex-col justify-between rounded-t-[5rem] will-change-transform overflow-hidden"
         style={{ backgroundColor: "#a3b18a", transformOrigin: "bottom left" }}
       >
-        {/* Inner Scrollable Wrapper - handles all scrolls inside the section */}
+        {/* Inner hidden-scrollbar wrapper */}
         <div 
           ref={scrollerRef}
           className="w-full h-full overflow-y-auto scrollbar-none pointer-events-auto"

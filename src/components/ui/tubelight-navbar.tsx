@@ -90,18 +90,9 @@ export function NavBar({ items, className }: NavBarProps) {
                   const targetId = item.url.substring(1)
                   const el = document.getElementById(targetId)
                   if (el) {
-                    if (typeof window !== "undefined") {
-                      gsap.registerPlugin(ScrollTrigger)
-                      const tempTrigger = ScrollTrigger.create({
-                        trigger: el,
-                        start: "top top",
-                      })
-                      const targetScroll = tempTrigger.start
-                      tempTrigger.kill()
-                      window.scrollTo({
-                        top: targetScroll,
-                        behavior: "smooth",
-                      })
+                    const lenis = window.lenis;
+                    if (lenis) {
+                      lenis.scrollTo(el);
                     } else {
                       el.scrollIntoView({ behavior: "smooth" })
                     }
