@@ -2,6 +2,7 @@
 
 import React from "react";
 import EarthyScrollReveal from "./EarthyScrollReveal";
+import ScrollVelocity from "./ui/ScrollVelocity";
 
 interface CycleStep {
   num: string;
@@ -65,44 +66,50 @@ export default function EarthyCycle() {
         </div>
       </EarthyScrollReveal>
 
-      {/* Grid: 5 columns on desktop, stacked on mobile */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        {steps.map((step, index) => (
-          <EarthyScrollReveal key={step.num} delay={index * 100}>
-            <div 
-              className="flex flex-col justify-between p-8 h-[280px] rounded-[2.5rem] border transition-all duration-[600ms] hover:translate-y-[-8px] hover:shadow-2xl"
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.4)",
-                borderColor: "rgba(1, 71, 46, 0.08)",
-                boxShadow: "0 20px 40px -15px rgba(1, 71, 46, 0.05)",
-                transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)"
-              }}
-            >
-              
-              {/* Step Circle Badge */}
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center font-sans text-xs font-bold"
-                style={{ 
-                  backgroundColor: "#ccd5ae",
-                  color: "#01472e"
-                }}
-              >
-                {step.num}
-              </div>
+      {/* ScrollVelocity horizontal continuous cards row */}
+      <div className="w-full select-none pointer-events-auto overflow-hidden">
+        <ScrollVelocity
+          texts={[
+            <div className="flex gap-6 items-center px-3" style={{ paddingRight: "24px" }} key="row">
+              {steps.map((step) => (
+                <div 
+                  key={step.num}
+                  className="flex flex-col justify-between p-8 h-[280px] w-[260px] rounded-[2.5rem] border shrink-0 transition-transform duration-300 hover:-translate-y-2 hover:shadow-lg text-left whitespace-normal"
+                  style={{
+                    backgroundColor: "#01472e",
+                    borderColor: "rgba(254, 250, 224, 0.12)",
+                    boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.25)",
+                  }}
+                >
+                  {/* Step Circle Badge */}
+                  <div 
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-sans text-xs font-bold"
+                    style={{ 
+                      backgroundColor: "#e9edc9",
+                      color: "#01472e"
+                    }}
+                  >
+                    {step.num}
+                  </div>
 
-              {/* Step Content */}
-              <div>
-                <h3 className="font-sans text-sm font-bold text-forest uppercase tracking-[0.15em] mb-3" style={{ color: "#01472e" }}>
-                  {step.title}
-                </h3>
-                <p className="font-sans text-[11px] md:text-xs text-forest/75 font-semibold leading-relaxed">
-                  {step.desc}
-                </p>
-              </div>
-
+                  {/* Step Content */}
+                  <div>
+                    <h3 className="font-sans text-sm font-bold uppercase tracking-[0.15em] mb-3" style={{ color: "#fefae0" }}>
+                      {step.title}
+                    </h3>
+                    <p className="font-sans text-[11px] md:text-xs font-semibold leading-relaxed whitespace-normal" style={{ color: "rgba(254, 250, 224, 0.85)" }}>
+                      {step.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </EarthyScrollReveal>
-        ))}
+          ]}
+          velocity={120}
+          numCopies={4}
+          damping={30}
+          stiffness={150}
+        />
       </div>
       </div>
     </section>

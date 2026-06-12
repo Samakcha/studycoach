@@ -84,13 +84,15 @@ export default function EarthyFeatures({ onAddToCart }: EarthyFeaturesProps) {
       >
         
         {/* Left column: Section Header & Brief (Floats sticky on desktop) */}
-        <div className="w-full md:w-[35%] lg:w-[40%] flex flex-col justify-start md:sticky md:top-28 h-fit relative z-20">
+        <div className="w-full md:w-[45%] lg:w-[45%] flex flex-col justify-start md:sticky md:top-28 h-fit relative z-20">
           <EarthyScrollReveal>
             <h2 
-              className="font-display text-[9vw] md:text-[6vw] lg:text-[7vw] leading-[0.85] tracking-[-0.03em] uppercase mb-4 text-forest"
+              className="font-display text-[10vw] md:text-[12vw] leading-[0.8] tracking-[-0.03em] uppercase mb-6"
               style={{ color: "#01472e" }}
             >
-              THE SYSTEM
+              THE
+              <br />
+              SYSTEM
             </h2>
           </EarthyScrollReveal>
 
@@ -101,8 +103,8 @@ export default function EarthyFeatures({ onAddToCart }: EarthyFeaturesProps) {
           </EarthyScrollReveal>
         </div>
 
-        {/* Right column: Scrollable stacked viewport */}
-        <div className="w-full md:w-[65%] lg:w-[60%] h-[380px] flex-grow relative z-10 overflow-hidden rounded-3xl">
+        {/* Right column: Scrollable stacked card viewport */}
+        <div className="w-full md:w-[55%] lg:w-[55%] h-[480px] flex-grow relative z-10 overflow-hidden rounded-3xl">
           <ScrollStack 
             className="w-full h-full"
             itemDistance={75}
@@ -184,7 +186,6 @@ export default function EarthyFeatures({ onAddToCart }: EarthyFeaturesProps) {
             ))}
           </ScrollStack>
         </div>
-
       </div>
     </section>
   );

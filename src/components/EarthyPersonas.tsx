@@ -634,8 +634,8 @@ export default function EarthyPersonas() {
         const trigger = ScrollTrigger.create({
           scroller: scrollerRef.current,
           trigger: card,
-          start: "top 55%",
-          end: "bottom 55%",
+          start: "top 35%",
+          end: "bottom 35%",
           onToggle: (self) => {
             if (self.isActive) {
               setActiveStep(idx);
@@ -666,154 +666,144 @@ export default function EarthyPersonas() {
         className="flow-art-container relative flex h-full w-full flex-col justify-between rounded-t-[5rem] will-change-transform overflow-hidden"
         style={{ backgroundColor: "#a3b18a", transformOrigin: "bottom left" }}
       >
-        {/* Inner hidden-scrollbar wrapper */}
-        <div 
-          ref={scrollerRef}
-          className="w-full h-full overflow-y-auto scrollbar-none pointer-events-auto"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          
-          {/* Desktop Layout */}
-          <div className="hidden md:block w-full">
-            
-            {/* Header Intro - stationary at the top of the scroll container */}
-            <div className="px-6 md:px-12 pt-16 md:pt-20 pb-4 shrink-0">
-              <EarthyScrollReveal>
-                <div className="max-w-3xl">
-                  <span className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-forest/70 mb-2 block" style={{ color: "rgba(1, 71, 46, 0.7)" }}>
-                    AGENTS // THE ACADEMIC COUNSELS
-                  </span>
-                  <h2 
-                    className="font-display text-[8vw] md:text-[6vw] leading-[0.85] tracking-[-0.03em] uppercase mb-3 text-forest"
-                    style={{ color: "#01472e" }}
-                  >
-                    THE COUNSELS
-                  </h2>
-                  <p className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed max-w-lg">
-                    Meet your personal AI academic board. Five specialized agents working in tandem to optimize syllabus coverage, test recall accuracy, and guide your daily pacing.
-                  </p>
-                </div>
-              </EarthyScrollReveal>
-            </div>
-
-            {/* Desktop Two-Column Layout */}
-            <div className="flex gap-12 w-full items-start relative px-6 md:px-12 pb-20">
-              
-              {/* LEFT COLUMN: Scrollable Cards */}
-              <div className="w-[45%] flex flex-col gap-[12vh] py-[8vh]">
-                {steps.map((step, idx) => (
-                  <motion.div 
-                    key={step.num}
-                    className="step-card border rounded-[2rem] p-8 backdrop-blur-md flex flex-col justify-between"
-                    style={{ minHeight: "280px" }}
-                    animate={{
-                      scale: activeStep === idx ? 1.02 : 0.95,
-                      opacity: activeStep === idx ? 1 : 0.35,
-                      backgroundColor: activeStep === idx ? "rgba(255, 255, 255, 0.55)" : "rgba(255, 255, 255, 0.1)",
-                      borderColor: activeStep === idx ? "rgba(1, 71, 46, 0.3)" : "rgba(1, 71, 46, 0.05)",
-                      boxShadow: activeStep === idx ? "0 20px 25px -5px rgba(1, 71, 46, 0.15), 0 10px 10px -5px rgba(1, 71, 46, 0.04)" : "none",
-                    }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  >
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="font-mono text-[10px] font-extrabold text-[#01472e] uppercase tracking-widest bg-[#01472e]/10 px-2.5 py-1 rounded-lg">
-                          {step.num} — 05
-                        </span>
-                        <span className="font-mono text-[9px] font-bold text-forest/60 tracking-wider uppercase">
-                          {step.agent}
-                        </span>
-                      </div>
-                      
-                      <motion.h3 
-                        className="font-sans text-xl md:text-2xl font-extrabold text-forest uppercase tracking-tight leading-none mb-4"
-                        animate={{
-                          y: activeStep === idx ? 0 : 4,
-                        }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                      >
-                        {step.title}
-                      </motion.h3>
-                      
-                      <motion.p 
-                        className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed"
-                        animate={{
-                          y: activeStep === idx ? 0 : 6,
-                        }}
-                        transition={{ duration: 0.4, delay: 0.05, ease: "easeOut" }}
-                      >
-                        {step.desc}
-                      </motion.p>
-                    </div>
-                    
-                    <motion.div 
-                      className="pt-4 border-t border-forest/10 font-mono text-[9px] uppercase tracking-wider text-forest/50 mt-6"
-                      animate={{
-                        opacity: activeStep === idx ? 1 : 0.6,
-                      }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
-                    >
-                      Focus: {step.focus}
-                    </motion.div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* RIGHT COLUMN: Sticky Simulator Display Dashboard Mockup */}
-              <div className="w-[55%] sticky top-[15vh] h-[70vh] flex items-center justify-center self-start">
-                <div className="w-full max-w-[620px] bg-white/40 backdrop-blur-xl border border-forest/10 rounded-3xl p-5 shadow-2xl flex flex-col h-[400px] shrink-0">
-                  {/* macOS window title bar */}
-                  <div className="flex items-center justify-between mb-4 shrink-0 pb-1">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-                    </div>
-                    <span className="font-mono text-[8px] font-bold text-forest/40 uppercase tracking-widest">
-                      StudyCoach Workspace
-                    </span>
-                    <div className="w-10" />
-                  </div>
-
-                  {/* Dashboard Content screen */}
-                  <div className="flex-grow relative overflow-hidden bg-white/10 rounded-2xl p-4.5 border border-forest/5 flex flex-col justify-between">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={activeStep}
-                        initial={{ opacity: 0, scale: 0.97 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.03 }}
-                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                        className="w-full h-full"
-                      >
-                        {activeStep === 0 && <SyllabusOptimizerMockup />}
-                        {activeStep === 1 && <ReferenceParserMockup />}
-                        {activeStep === 2 && <DiagnosticGuideMockup />}
-                        {activeStep === 3 && <RecallTesterMockup />}
-                        {activeStep === 4 && <SchedulePacerMockup />}
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Mobile Stack Layout */}
-          <div className="block md:hidden px-6 py-10 space-y-8">
-            <div className="max-w-3xl mb-8">
-              <span className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-forest/70 mb-2 block" style={{ color: "rgba(1, 71, 46, 0.7)" }}>
-                AGENTS // THE ACADEMIC COUNSELS
-              </span>
+        {/* Desktop Header Intro - stationary at the top of the section */}
+        <div className="hidden md:block w-full px-6 md:px-12 pt-8 md:pt-10 pb-4 shrink-0 z-20">
+          <EarthyScrollReveal>
+            <div className="max-w-3xl">
               <h2 
-                className="font-display text-[8vw] md:text-[6vw] leading-[0.85] tracking-[-0.03em] uppercase mb-3 text-forest"
+                className="font-display text-[10vw] md:text-[12vw] leading-[0.8] tracking-[-0.03em] uppercase mb-4 text-forest"
                 style={{ color: "#01472e" }}
               >
                 THE COUNSELS
               </h2>
               <p className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed max-w-lg">
-                Meet your personal AI academic board. Five specialized agents working in tandem to optimize syllabus coverage, test recall accuracy, and guide your daily pacing.
+                Meet your personal AI academic board
+              </p>
+            </div>
+          </EarthyScrollReveal>
+        </div>
+
+        {/* Desktop Two-Column Layout (Desktop only) */}
+        <div className="hidden md:flex flex-1 min-h-0 w-full gap-12 px-6 md:px-12 items-stretch">
+          
+          {/* LEFT COLUMN: Scrollable Cards Container */}
+          <div 
+            ref={scrollerRef}
+            className="w-[45%] h-full overflow-y-auto scrollbar-none pointer-events-auto z-10"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <div className="flex flex-col gap-[12vh] pt-[4vh] pb-[35vh]">
+              {steps.map((step, idx) => (
+                <motion.div 
+                  key={step.num}
+                  className="step-card border rounded-[2rem] p-8 backdrop-blur-md flex flex-col justify-between"
+                  style={{ minHeight: "280px" }}
+                  animate={{
+                    scale: activeStep === idx ? 1.02 : 0.95,
+                    opacity: activeStep === idx ? 1 : 0.35,
+                    backgroundColor: activeStep === idx ? "rgba(255, 255, 255, 0.55)" : "rgba(255, 255, 255, 0.1)",
+                    borderColor: activeStep === idx ? "rgba(1, 71, 46, 0.3)" : "rgba(1, 71, 46, 0.05)",
+                    boxShadow: activeStep === idx ? "0 20px 25px -5px rgba(1, 71, 46, 0.15), 0 10px 10px -5px rgba(1, 71, 46, 0.04)" : "none",
+                  }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="font-mono text-[10px] font-extrabold text-[#01472e] uppercase tracking-widest bg-[#01472e]/10 px-2.5 py-1 rounded-lg">
+                        {step.num} — 05
+                      </span>
+                      <span className="font-mono text-[9px] font-bold text-forest/60 tracking-wider uppercase">
+                        {step.agent}
+                      </span>
+                    </div>
+                    
+                    <motion.h3 
+                      className="font-sans text-xl md:text-2xl font-extrabold text-forest uppercase tracking-tight leading-none mb-4"
+                      animate={{
+                        y: activeStep === idx ? 0 : 4,
+                      }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                    >
+                      {step.title}
+                    </motion.h3>
+                    
+                    <motion.p 
+                      className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed"
+                      animate={{
+                        y: activeStep === idx ? 0 : 6,
+                      }}
+                      transition={{ duration: 0.4, delay: 0.05, ease: "easeOut" }}
+                    >
+                      {step.desc}
+                    </motion.p>
+                  </div>
+                  
+                  <motion.div 
+                    className="pt-4 border-t border-forest/10 font-mono text-[9px] uppercase tracking-wider text-forest/50 mt-6"
+                    animate={{
+                      opacity: activeStep === idx ? 1 : 0.6,
+                    }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
+                    Focus: {step.focus}
+                  </motion.div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Stationary Simulator Display Dashboard Mockup */}
+          <div className="w-[55%] h-full flex items-center justify-center">
+            <div className="w-full max-w-[620px] bg-white/40 backdrop-blur-xl border border-forest/10 rounded-3xl p-5 shadow-2xl flex flex-col h-[400px] shrink-0">
+              {/* macOS window title bar */}
+              <div className="flex items-center justify-between mb-4 shrink-0 pb-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                </div>
+                <span className="font-mono text-[8px] font-bold text-forest/40 uppercase tracking-widest">
+                  StudyCoach Workspace
+                </span>
+                <div className="w-10" />
+              </div>
+
+              {/* Dashboard Content screen */}
+              <div className="flex-grow relative overflow-hidden bg-white/10 rounded-2xl border border-forest/5">
+                <AnimatePresence>
+                  <motion.div
+                    key={activeStep}
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.03 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="w-full h-full absolute inset-0 p-4.5"
+                  >
+                    {activeStep === 0 && <SyllabusOptimizerMockup />}
+                    {activeStep === 1 && <ReferenceParserMockup />}
+                    {activeStep === 2 && <DiagnosticGuideMockup />}
+                    {activeStep === 3 && <RecallTesterMockup />}
+                    {activeStep === 4 && <SchedulePacerMockup />}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Mobile Stack Layout */}
+        <div className="block md:hidden w-full h-full overflow-y-auto scrollbar-none pointer-events-auto">
+          <div className="px-6 py-10 space-y-8">
+            <div className="max-w-3xl mb-8">
+              <h2 
+                className="font-display text-[10vw] md:text-[12vw] leading-[0.8] tracking-[-0.03em] uppercase mb-4 text-forest"
+                style={{ color: "#01472e" }}
+              >
+                THE COUNSELS
+              </h2>
+              <p className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed max-w-lg">
+                Meet your personal AI academic board
               </p>
             </div>
 
@@ -847,8 +837,8 @@ export default function EarthyPersonas() {
               </div>
             ))}
           </div>
-
         </div>
+
       </div>
     </section>
   );

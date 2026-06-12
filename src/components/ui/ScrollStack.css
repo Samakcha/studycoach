@@ -1,47 +1,51 @@
+/* ── Scroller container ────────────────────────────────────────────────────── */
 .scroll-stack-scroller {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: visible;
-  overscroll-behavior: auto;
-  -webkit-overflow-scrolling: touch;
+  /* Lenis (wrapper/content mode) will set overflow:hidden at runtime.
+     We declare overflow:hidden here to match and avoid a flash of native scroll. */
+  overflow: hidden;
+  overscroll-behavior: contain;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   will-change: scroll-position;
+  /* Hide the scrollbar on all browsers */
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge */
 }
 
+.scroll-stack-scroller::-webkit-scrollbar {
+  display: none;               /* Chrome / Safari / Opera */
+}
+
+/* ── Inner scrollable content ─────────────────────────────────────────────── */
 .scroll-stack-inner {
-  padding: 2vh 1rem 30vh;
-  min-height: 100vh;
+  /* Top padding pushes first card into view; large bottom gives unpinning room */
+  padding: 2vh 1rem 50rem;
+  min-height: 100%;
 }
 
-.scroll-stack-card-wrapper {
-  position: relative;
-}
-
+/* ── Card skeleton ─────────────────────────────────────────────────────────── */
 .scroll-stack-card {
   transform-origin: top center;
   will-change: transform, filter;
   backface-visibility: hidden;
   transform-style: preserve-3d;
   box-sizing: border-box;
-  /* Improve mobile performance */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   position: relative;
 
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  
+  /* Default dimensions — overridden per-project via itemClassName */
   width: 100%;
-  max-width: 320px;
-  height: 270px;
-  margin: 20px auto;
+  height: 20rem;          /* 320 px — matches React Bits default */
+  border-radius: 40px;
+  margin: 30px auto;
   padding: 0;
 }
 
+/* ── Sentinel element ──────────────────────────────────────────────────────── */
 .scroll-stack-end {
   width: 100%;
   height: 1px;

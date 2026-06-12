@@ -17,11 +17,19 @@ export default function EarthyCTA() {
   const handleViewDemo = () => {
     const el = document.getElementById("counsels");
     if (el) {
+      // Calculate the correct ScrollTrigger-aware scroll position
+      const st = ScrollTrigger.create({
+        trigger: el,
+        start: "top top",
+      });
+      const scrollPos = st.start;
+      st.kill();
+
       const lenis = window.lenis;
       if (lenis) {
-        lenis.scrollTo(el);
+        lenis.scrollTo(scrollPos);
       } else {
-        el.scrollIntoView({ behavior: "smooth" });
+        window.scrollTo({ top: scrollPos, behavior: "smooth" });
       }
     }
   };

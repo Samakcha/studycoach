@@ -90,11 +90,19 @@ export function NavBar({ items, className }: NavBarProps) {
                   const targetId = item.url.substring(1)
                   const el = document.getElementById(targetId)
                   if (el) {
+                    // Calculate the correct ScrollTrigger-aware scroll position
+                    const st = ScrollTrigger.create({
+                      trigger: el,
+                      start: "top top",
+                    })
+                    const scrollPos = st.start
+                    st.kill()
+
                     const lenis = window.lenis;
                     if (lenis) {
-                      lenis.scrollTo(el);
+                      lenis.scrollTo(scrollPos);
                     } else {
-                      el.scrollIntoView({ behavior: "smooth" })
+                      window.scrollTo({ top: scrollPos, behavior: "smooth" })
                     }
                   }
                 }

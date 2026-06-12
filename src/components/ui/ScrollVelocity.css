@@ -1,0 +1,18 @@
+.parallax {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.scroller {
+  display: flex;
+  white-space: nowrap;
+  text-align: center;
+  align-items: center;
+}
+
+.scroller span {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
