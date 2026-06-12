@@ -58,7 +58,7 @@ export default function EarthyCycle() {
             className="font-display text-[10vw] md:text-[12vw] leading-[0.8] tracking-[-0.03em] uppercase mb-6"
             style={{ color: "#01472e" }}
           >
-            THE AGENTS
+            THE WORKFLOW
           </h2>
           <p className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed max-w-lg">
             Forget passive highlight-taking. StudyCoach translates standard files into an active, self-correcting exam preparation cycle that continuously isolates and reinforces high-weightage topics.

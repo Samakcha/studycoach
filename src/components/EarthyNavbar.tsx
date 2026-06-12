@@ -15,8 +15,8 @@ export default function EarthyNavbar({ cartCount }: EarthyNavbarProps) {
   const navItems = [
     { name: "Home", url: "#hero", icon: Home },
     { name: "Features", url: "#features", icon: Sparkles },
-    { name: "Agents", url: "#cycle", icon: HelpCircle },
-    { name: "Counsels", url: "#counsels", icon: Users },
+    { name: "Workflow", url: "#cycle", icon: HelpCircle },
+    { name: "Agents", url: "#counsels", icon: Users },
     { name: "Join", url: "#access", icon: UserPlus },
   ];
 

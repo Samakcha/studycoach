@@ -674,7 +674,7 @@ export default function EarthyPersonas() {
                 className="font-display text-[10vw] md:text-[12vw] leading-[0.8] tracking-[-0.03em] uppercase mb-4 text-forest"
                 style={{ color: "#01472e" }}
               >
-                THE COUNSELS
+                THE AGENTS
               </h2>
               <p className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed max-w-lg">
                 Meet your personal AI academic board
@@ -800,7 +800,7 @@ export default function EarthyPersonas() {
                 className="font-display text-[10vw] md:text-[12vw] leading-[0.8] tracking-[-0.03em] uppercase mb-4 text-forest"
                 style={{ color: "#01472e" }}
               >
-                THE COUNSELS
+                THE AGENTS
               </h2>
               <p className="font-sans text-xs md:text-sm text-forest/80 font-medium leading-relaxed max-w-lg">
                 Meet your personal AI academic board
