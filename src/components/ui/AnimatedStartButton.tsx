@@ -3,37 +3,15 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Link from "next/link";
 
 export default function AnimatedStartButton() {
   const [isHovered, setIsHovered] = React.useState(false);
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const el = document.getElementById("access");
-    if (el) {
-      // Calculate the correct ScrollTrigger-aware scroll position
-      const st = ScrollTrigger.create({
-        trigger: el,
-        start: "top top",
-      });
-      const scrollPos = st.start;
-      st.kill();
-
-      const lenis = window.lenis;
-      if (lenis) {
-        lenis.scrollTo(scrollPos);
-      } else {
-        window.scrollTo({ top: scrollPos, behavior: "smooth" });
-      }
-    }
-  };
-
   return (
-    <a 
-      href="#access" 
-      onClick={handleClick}
-      className="inline-block"
+    <Link 
+      href="/sign-up" 
+      className="inline-block cursor-pointer pointer-events-auto"
     >
       <motion.div
         initial={{ width: 44, height: 44 }}
@@ -70,6 +48,7 @@ export default function AnimatedStartButton() {
           </span>
         </motion.div>
       </motion.div>
-    </a>
+    </Link>
   );
 }
+

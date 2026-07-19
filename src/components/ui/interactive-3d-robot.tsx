@@ -14,6 +14,34 @@ export function InteractiveRobotSpline({ scene, className }: InteractiveRobotSpl
       const searchAndRemove = (root: Document | ShadowRoot) => {
         if (!root) return;
 
+        // Inject helper CSS to override styles locally within this root/shadow DOM
+        try {
+          const existingStyle = root.querySelector('style[data-spline-hide]');
+          if (!existingStyle) {
+            const style = document.createElement('style');
+            style.setAttribute('data-spline-hide', 'true');
+            style.textContent = `
+              #spline-logo,
+              .spline-watermark,
+              [id*="spline-logo"],
+              [class*="spline-watermark"],
+              a[href*="spline.design"],
+              a[href*="spline.com"],
+              a[href*="spline"],
+              iframe[src*="spline"],
+              div[style*="absolute"][style*="bottom"][style*="right"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+              }
+            `;
+            root.appendChild(style);
+          }
+        } catch (e) {
+          // Ignored if root is immutable
+        }
+
         // 1. Remove standard anchors containing spline
         const links = root.querySelectorAll('a');
         links.forEach((link) => {
@@ -25,6 +53,16 @@ export function InteractiveRobotSpline({ scene, className }: InteractiveRobotSpl
             link.style.visibility = 'hidden';
             link.style.opacity = '0';
             link.style.pointerEvents = 'none';
+
+            // Hide the parent element (the logo pill wrapper)
+            const parent = link.parentElement;
+            if (parent) {
+              parent.style.display = 'none';
+              parent.style.setProperty('display', 'none', 'important');
+              parent.style.visibility = 'hidden';
+              parent.style.opacity = '0';
+              parent.style.pointerEvents = 'none';
+            }
           }
         });
 
@@ -63,9 +101,9 @@ export function InteractiveRobotSpline({ scene, className }: InteractiveRobotSpl
       searchAndRemove(document);
     };
 
-    // Run immediately, then poll every 200ms for 10 seconds to catch deferred loads
+    // Run immediately, then poll every 150ms for 10 seconds to catch deferred loads
     removeSplineLogo();
-    const interval = setInterval(removeSplineLogo, 200);
+    const interval = setInterval(removeSplineLogo, 150);
     const timeout = setTimeout(() => clearInterval(interval), 10000);
 
     return () => {
