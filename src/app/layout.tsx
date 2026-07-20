@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SmoothScroll from "@/components/ui/SmoothScroll";
+import GlobalCursor from "@/components/ui/GlobalCursor";
 
 export const metadata: Metadata = {
   title: "StudyCoach — Reality-First AI Study Assistant",
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en" className="antialiased">
       <body className="min-h-screen flex flex-col bg-brand-bg text-brand-black">
         <SmoothScroll />
+        <GlobalCursor />
         {children}
       </body>
     </html>

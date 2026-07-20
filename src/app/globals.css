@@ -31,6 +31,10 @@
 }
 
 /* Reset default styles */
+html, body, a, button, input, textarea, select, label, [role="button"] {
+  cursor: none !important;
+}
+
 html {
   background-color: var(--color-cream);
   overflow-x: hidden;
