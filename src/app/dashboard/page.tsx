@@ -141,8 +141,204 @@ export default function Dashboard() {
     },
   ]);
 
-  // Profile Modal State
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  // Modals States
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Upload Modal State variables
+  const [uploadFile, setUploadFile] = useState<{ name: string; size: number } | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Quiz Modal State variables
+  const [quizSubject, setQuizSubject] = useState("Mathematics");
+  const [quizStep, setQuizStep] = useState<"select" | "question" | "score">("select");
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [selectedAnswerIdx, setSelectedAnswerIdx] = useState<number | null>(null);
+  const [quizScore, setQuizScore] = useState(0);
+
+  // Notes Modal State variables
+  const [notesSubject, setNotesSubject] = useState("Mathematics");
+  const [copiedNotes, setCopiedNotes] = useState(false);
+
+  // Settings Modal State variables
+  const [settingsTab, setSettingsTab] = useState<"profile" | "preferences" | "account">("profile");
+  const [editFullName, setEditFullName] = useState("");
+  const [editExamTarget, setEditExamTarget] = useState("");
+  const [editGradeClass, setEditGradeClass] = useState("");
+  const [editExamDate, setEditExamDate] = useState("");
+  const [dailyGoalPercent, setDailyGoalPercent] = useState(75);
+  const [mockDarkMode, setMockDarkMode] = useState(false);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+
+  // Sync edit profile variables when profileData is loaded
+  useEffect(() => {
+    if (profileData) {
+      setEditFullName(profileData.fullName || "");
+      setEditExamTarget(profileData.examTarget || "");
+      setEditGradeClass(profileData.gradeClass || "");
+      setEditExamDate(profileData.examDate || "");
+    }
+  }, [profileData]);
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile) return;
+    setIsUploading(true);
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 20;
+      setUploadProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        // Add new subject dynamically
+        const newSubjectName = uploadFile.name.split(".")[0].replace(/_/g, " ").replace(/-/g, " ");
+        const newSubject: SubjectItem = {
+          id: `subj-new-${Date.now()}`,
+          name: newSubjectName.charAt(0).toUpperCase() + newSubjectName.slice(1),
+          progress: 0,
+          totalModules: 10,
+          completedModules: 0,
+          nextTopic: "Chapter 1 Overview",
+          topicCount: 10,
+          lastStudied: "Just now",
+          borderColor: subjectColors[dbSubjects.length % subjectColors.length],
+        };
+        setDbSubjects((prev) => [...prev, newSubject]);
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadFile(null);
+          setUploadProgress(0);
+          setShowUploadModal(false);
+        }, 800);
+      }
+    }, 200);
+  };
+
+  const handleSaveSettings = () => {
+    setProfileData((prev: any) => ({
+      ...prev,
+      fullName: editFullName,
+      examTarget: editExamTarget,
+      gradeClass: editGradeClass,
+      examDate: editExamDate,
+    }));
+    setShowSettingsModal(false);
+  };
+
+  const quizQuestions: Record<string, Array<{ question: string; options: string[]; answer: number }>> = {
+    "Mathematics": [
+      {
+        question: "What is the derivative of f(x) = 3x² + 5x - 2?",
+        options: ["f'(x) = 6x + 5", "f'(x) = 3x + 5", "f'(x) = 6x", "f'(x) = 6x - 2"],
+        answer: 0,
+      },
+      {
+        question: "If log₂(x) = 5, what is x?",
+        options: ["x = 10", "x = 25", "x = 32", "x = 64"],
+        answer: 2,
+      },
+      {
+        question: "What is the value of sin(π/6)?",
+        options: ["0", "0.5", "√3/2", "1"],
+        answer: 1,
+      },
+    ],
+    "Physics": [
+      {
+        question: "Which of the following is Newton's Second Law?",
+        options: ["E = mc²", "F = ma", "v = d/t", "p = mv"],
+        answer: 1,
+      },
+      {
+        question: "What is the approximate acceleration due to gravity on Earth's surface?",
+        options: ["9.8 m/s²", "8.9 m/s²", "10.5 m/s²", "1.6 m/s²"],
+        answer: 0,
+      },
+      {
+        question: "Which color of light is scattered most by Earth's atmosphere, causing the sky to appear blue?",
+        options: ["Red", "Green", "Blue", "Yellow"],
+        answer: 2,
+      },
+    ],
+    "Chemistry": [
+      {
+        question: "What is the chemical formula for common table salt?",
+        options: ["H₂O", "CO₂", "NaCl", "O₂"],
+        answer: 2,
+      },
+      {
+        question: "What is the pH of a perfectly neutral aqueous solution at 25°C?",
+        options: ["0", "5", "7", "14"],
+        answer: 2,
+      },
+      {
+        question: "Which element has the atomic number 1?",
+        options: ["Helium", "Hydrogen", "Oxygen", "Carbon"],
+        answer: 1,
+      },
+    ],
+    "General Review": [
+      {
+        question: "What is the primary focus of active recall as a study technique?",
+        options: ["Reading the textbook multiple times", "Highlighting key sentences in color", "Testing your memory by retrieving info", "Listening to lecture recordings"],
+        answer: 2,
+      },
+      {
+        question: "Which study technique uses timed focus intervals followed by short breaks?",
+        options: ["The Pomodoro Technique", "The Feynman Technique", "The Leitner System", "SQ3R Method"],
+        answer: 0,
+      },
+      {
+        question: "What is the recommended sleep duration for optimal cognitive retention and memory consolidation?",
+        options: ["3 - 4 hours", "5 - 6 hours", "7 - 9 hours", "10 - 12 hours"],
+        answer: 2,
+      },
+    ],
+  };
+
+  const getQuizQuestions = (subjectName: string) => {
+    if (subjectName.includes("Math")) return quizQuestions["Mathematics"];
+    if (subjectName.includes("Science") || subjectName.includes("Physic")) return quizQuestions["Physics"];
+    if (subjectName.includes("Chemis")) return quizQuestions["Chemistry"];
+    return quizQuestions["General Review"];
+  };
+
+  const mockNotes: Record<string, string[]> = {
+    "Mathematics": [
+      "📐 Calculus: The derivative of f(x) = x^n is f'(x) = n*x^(n-1). Useful for finding rate of change.",
+      "📈 Logarithms: log_b(x) = y is equivalent to b^y = x. Essential property: log(a*b) = log(a) + log(b).",
+      "📐 Trigonometry: sin²(θ) + cos²(θ) = 1. Double angle formulas: sin(2θ) = 2sin(θ)cos(θ).",
+      "💡 Study Tip: Solve at least 5 derivative problems daily to maintain speed and accuracy."
+    ],
+    "Physics": [
+      "🍎 Mechanics: F = ma (Force = Mass * Acceleration). Friction acts opposite to the direction of motion.",
+      "⚡ Electromagnetism: V = IR (Ohm's Law). Power P = VI = I²R.",
+      "🌌 Relativity: E = mc² states mass and energy are equivalent and interconvertible.",
+      "💡 Study Tip: Always write out variables and units before initiating multi-step formula calculations."
+    ],
+    "Chemistry": [
+      "🧪 Atomic Structure: Atomic number represents protons. Neutrons = Mass number - Atomic number.",
+      "⚖️ Stoichiometry: 1 mole of any gas at STP occupies 22.4 liters. Balance equations before calculations.",
+      "🌡️ Thermodynamics: Exothermic reactions release heat (ΔH < 0). Endothermic absorb heat (ΔH > 0).",
+      "💡 Study Tip: Draw Lewis dot structures to visualize electron sharing in covalent compounds."
+    ],
+    "General Review": [
+      "⏱️ Pomodoro Technique: Focus intensely for 25 minutes, then take a 5-minute restorative break.",
+      "🧠 Active Recall: Test yourself with flashcards rather than passively re-reading the textbook.",
+      "📊 Spaced Repetition: Review concepts at expanding intervals (1 day, 3 days, 7 days, 14 days)."
+    ]
+  };
+
+  const getSubjectNotes = (subjectName: string) => {
+    if (subjectName.includes("Math")) return mockNotes["Mathematics"];
+    if (subjectName.includes("Science") || subjectName.includes("Physic")) return mockNotes["Physics"];
+    if (subjectName.includes("Chemis")) return mockNotes["Chemistry"];
+    return mockNotes["General Review"];
+  };
 
   // Sticky Menu Drawer State
   const [isMenuOpen, setIsMenuOpen] = useState(true);
@@ -426,7 +622,7 @@ export default function Dashboard() {
 
             {/* Profile Drawer Trigger Pill */}
             <motion.button
-              onClick={() => setShowProfileModal(true)}
+              onClick={() => setShowSettingsModal(true)}
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.97 }}
               className="flex items-center gap-2.5 bg-white border border-[#01472e]/15 hover:border-[#01472e]/30 px-3.5 py-1.5 rounded-full shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
@@ -841,7 +1037,7 @@ export default function Dashboard() {
                     Student Profile
                   </h3>
                   <button
-                    onClick={() => setShowProfileModal(true)}
+                    onClick={() => setShowSettingsModal(true)}
                     className="font-sans text-xs font-semibold text-[#01472e] hover:underline cursor-pointer"
                   >
                     View Details
@@ -910,9 +1106,9 @@ export default function Dashboard() {
 
       </main>
 
-      {/* STUDENT PROFILE MODAL */}
+      {/* UPLOAD MATERIAL MODAL */}
       <AnimatePresence>
-        {showProfileModal && (
+        {showUploadModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -926,80 +1122,760 @@ export default function Dashboard() {
               transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
               className="w-full max-w-md bg-white border border-[#01472e]/20 rounded-3xl p-6 md:p-8 shadow-2xl relative z-10 text-[#01472e]"
             >
-
-              {/* Modal Close Button */}
+              {/* Close Button */}
               <button
-                onClick={() => setShowProfileModal(false)}
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setUploadFile(null);
+                  setUploadProgress(0);
+                  setIsUploading(false);
+                }}
                 className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Modal Header */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
-                  <User className="w-5 h-5" />
+                  <UploadCloud className="w-5 h-5 text-[#ccd5ae]" />
                 </div>
                 <div>
                   <h3 className="font-sans text-xl font-bold text-[#01472e]">
-                    Student Profile Details
+                    Upload Study Material
                   </h3>
                   <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block">
-                    Account Overview
+                    Generate New Study Modules
                   </span>
                 </div>
               </div>
 
-              {/* Profile Details List */}
-              <div className="space-y-4 bg-[#fefae0]/60 border border-[#01472e]/10 rounded-2xl p-5 mb-6 text-xs font-sans">
-                <div>
-                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block mb-1">
-                    Student Full Name
-                  </span>
-                  <p className="font-bold text-sm text-[#01472e]">{profileData.fullName}</p>
+              {!isUploading && !uploadFile ? (
+                <div
+                  onClick={() => {
+                    const input = document.getElementById("file-upload-input");
+                    input?.click();
+                  }}
+                  className="border-2 border-dashed border-[#01472e]/25 hover:border-[#01472e]/55 rounded-2xl p-8 text-center cursor-pointer transition-colors bg-[#fefae0]/20 hover:bg-[#fefae0]/40 flex flex-col items-center justify-center space-y-3"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#ccd5ae]/30 flex items-center justify-center text-[#01472e]">
+                    <UploadCloud className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="font-sans text-sm font-bold text-[#01472e]">
+                      Click to choose or drag & drop files
+                    </p>
+                    <p className="font-sans text-xs text-[#4a5568] mt-1">
+                      PDF, DOCX, TXT or Syllabus files up to 25MB
+                    </p>
+                  </div>
+                  <input
+                    id="file-upload-input"
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        const file = e.target.files[0];
+                        setUploadFile({ name: file.name, size: file.size });
+                      }
+                    }}
+                  />
                 </div>
-
-                <div className="border-t border-[#01472e]/10 pt-3">
-                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block mb-1">
-                    Email Address
-                  </span>
-                  <p className="font-normal text-[#4a5568]">{profileData.email}</p>
+              ) : isUploading ? (
+                <div className="space-y-4 py-4 text-center">
+                  <div className="text-sm font-bold text-[#01472e]">Parsing syllabus and extracting topics...</div>
+                  <div className="w-full bg-[#ccd5ae]/30 h-2.5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${uploadProgress}%` }}
+                      className="bg-[#01472e] h-full"
+                    />
+                  </div>
+                  <div className="text-xs text-[#01472e]/70 font-semibold uppercase tracking-wider">{uploadProgress}% complete</div>
                 </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 bg-[#ccd5ae]/20 p-4 rounded-xl border border-[#01472e]/10">
+                    <FileText className="w-8 h-8 text-[#01472e] flex-shrink-0" />
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-[#01472e] truncate">{uploadFile?.name}</p>
+                      <p className="text-[10px] text-[#4a5568]">{((uploadFile?.size || 0) / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                  </div>
 
-                <div className="border-t border-[#01472e]/10 pt-3">
-                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block mb-1">
-                    Target Exam & Academic Level
-                  </span>
-                  <p className="font-normal text-[#4a5568]">{profileData.examTarget} ({profileData.gradeClass})</p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setUploadFile(null)}
+                      className="flex-1 bg-transparent hover:bg-[#01472e]/5 border border-[#01472e]/20 text-[#01472e] font-semibold text-xs py-3 rounded-xl cursor-pointer transition-colors"
+                    >
+                      Clear File
+                    </button>
+                    <button
+                      onClick={handleUploadSubmit}
+                      className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                    >
+                      Generate Module
+                    </button>
+                  </div>
                 </div>
-
-                <div className="border-t border-[#01472e]/10 pt-3">
-                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block mb-1">
-                    Scheduled Test Date
-                  </span>
-                  <p className="font-normal text-[#4a5568]">{profileData.examDate}</p>
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <button
-                onClick={() => setShowProfileModal(false)}
-                className="w-full bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200"
-              >
-                Close Details
-              </button>
-
+              )}
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PRACTICE QUIZ MODAL */}
+      <AnimatePresence>
+        {showQuizModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-center items-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+              className="w-full max-w-md bg-white border border-[#01472e]/20 rounded-3xl p-6 md:p-8 shadow-2xl relative z-10 text-[#01472e]"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowQuizModal(false);
+                  setQuizStep("select");
+                  setCurrentQuestionIdx(0);
+                  setSelectedAnswerIdx(null);
+                  setQuizScore(0);
+                }}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                  <Award className="w-5 h-5 text-[#ccd5ae]" />
+                </div>
+                <div>
+                  <h3 className="font-sans text-xl font-bold text-[#01472e]">
+                    Practice Quiz Drill
+                  </h3>
+                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block">
+                    Active Recall Training
+                  </span>
+                </div>
+              </div>
+
+              {quizStep === "select" ? (
+                <div className="space-y-4">
+                  <p className="text-xs text-[#4a5568]">
+                    Choose an active module to generate a 3-question revision quiz.
+                  </p>
+                  <div className="space-y-2">
+                    {dbSubjects.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => {
+                          setQuizSubject(s.name);
+                          setQuizStep("question");
+                        }}
+                        className="w-full bg-[#fefae0]/40 hover:bg-[#ccd5ae]/35 border border-[#01472e]/10 p-3.5 rounded-xl text-left font-sans text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-between group"
+                      >
+                        <span>{s.name}</span>
+                        <ArrowRight className="w-4 h-4 text-[#01472e]/40 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : quizStep === "question" ? (
+                (() => {
+                  const questions = getQuizQuestions(quizSubject);
+                  const currentQuestion = questions[currentQuestionIdx];
+                  const isLastQuestion = currentQuestionIdx === questions.length - 1;
+
+                  return (
+                    <div className="space-y-5">
+                      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-semibold text-[#01472e]/70 border-b border-[#01472e]/10 pb-2">
+                        <span>Subject: {quizSubject}</span>
+                        <span>Question {currentQuestionIdx + 1} of {questions.length}</span>
+                      </div>
+
+                      <h4 className="text-sm font-bold text-[#01472e] leading-snug">
+                        {currentQuestion.question}
+                      </h4>
+
+                      <div className="space-y-2">
+                        {currentQuestion.options.map((option, idx) => {
+                          let optionClass = "border-[#01472e]/10 bg-white hover:bg-[#fefae0]/40";
+                          if (selectedAnswerIdx !== null) {
+                            if (idx === currentQuestion.answer) {
+                              optionClass = "border-emerald-500 bg-emerald-50 text-emerald-950 font-semibold";
+                            } else if (idx === selectedAnswerIdx) {
+                              optionClass = "border-red-500 bg-red-50 text-red-950";
+                            } else {
+                              optionClass = "border-[#01472e]/5 opacity-60 bg-white";
+                            }
+                          }
+
+                          return (
+                            <button
+                              key={idx}
+                              disabled={selectedAnswerIdx !== null}
+                              onClick={() => {
+                                setSelectedAnswerIdx(idx);
+                                if (idx === currentQuestion.answer) {
+                                  setQuizScore((prev) => prev + 1);
+                                }
+                              }}
+                              className={`w-full p-3 text-left rounded-xl border text-xs transition-all duration-150 ${optionClass} ${selectedAnswerIdx === null ? "cursor-pointer" : "cursor-default"}`}
+                            >
+                              {option}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {selectedAnswerIdx !== null && (
+                        <button
+                          onClick={() => {
+                            if (isLastQuestion) {
+                              setQuizStep("score");
+                            } else {
+                              setCurrentQuestionIdx((prev) => prev + 1);
+                              setSelectedAnswerIdx(null);
+                            }
+                          }}
+                          className="w-full bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200 text-center"
+                        >
+                          {isLastQuestion ? "View Scorecard" : "Next Question"}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="space-y-6 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-2 py-4">
+                    <div className="relative w-20 h-20 rounded-full flex items-center justify-center border-4 border-[#ccd5ae]/30">
+                      <div className="absolute inset-0 rounded-full border-4 border-[#01472e] border-t-transparent animate-pulse" />
+                      <span className="text-2xl font-black text-[#01472e]">
+                        {quizScore}/3
+                      </span>
+                    </div>
+                    <div className="pt-2">
+                      <h4 className="font-sans text-base font-bold text-[#01472e]">
+                        {quizScore === 3 ? "🥇 Perfect Score!" : quizScore === 2 ? "🥈 Great Job!" : "📚 Keep Learning!"}
+                      </h4>
+                      <p className="text-xs text-[#4a5568] max-w-[240px] mx-auto mt-1">
+                        {quizScore === 3
+                          ? "You have fully mastered these concepts. Excellent recall speed."
+                          : "Reviewing formulas and key concepts will help reinforce remaining gaps."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setQuizStep("select");
+                        setCurrentQuestionIdx(0);
+                        setSelectedAnswerIdx(null);
+                        setQuizScore(0);
+                      }}
+                      className="flex-1 bg-transparent hover:bg-[#01472e]/5 border border-[#01472e]/20 text-[#01472e] font-semibold text-xs py-3 rounded-xl cursor-pointer transition-colors"
+                    >
+                      Try Another Subject
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowQuizModal(false);
+                        setQuizStep("select");
+                        setCurrentQuestionIdx(0);
+                        setSelectedAnswerIdx(null);
+                        setQuizScore(0);
+                      }}
+                      className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* NOTES MODAL */}
+      <AnimatePresence>
+        {showNotesModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-center items-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+              className="w-full max-w-lg bg-white border border-[#01472e]/20 rounded-3xl p-6 md:p-8 shadow-2xl relative z-10 text-[#01472e]"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowNotesModal(false);
+                  setCopiedNotes(false);
+                }}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[#ccd5ae]" />
+                </div>
+                <div>
+                  <h3 className="font-sans text-xl font-bold text-[#01472e]">
+                    Synthesized Study Notes
+                  </h3>
+                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block">
+                    AI-Extracted Core Concepts
+                  </span>
+                </div>
+              </div>
+
+              {/* Horizontal Scrollable Tabs */}
+              <div className="flex gap-1.5 overflow-x-auto pb-3 mb-4 scrollbar-none border-b border-[#01472e]/10">
+                {dbSubjects.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      setNotesSubject(s.name);
+                      setCopiedNotes(false);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all duration-150 cursor-pointer flex-shrink-0 ${
+                      notesSubject === s.name
+                        ? "bg-[#01472e] text-[#fefae0] border-[#01472e]"
+                        : "bg-[#fefae0]/40 text-[#01472e] border-[#01472e]/10 hover:bg-[#ccd5ae]/30"
+                    }`}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Notes Content */}
+              <div className="bg-[#fefae0]/60 border border-[#01472e]/10 rounded-2xl p-5 mb-5 max-h-72 overflow-y-auto space-y-4 font-sans text-xs scrollbar-none">
+                <h4 className="text-sm font-bold text-[#01472e] uppercase tracking-wider text-[11px] border-b border-[#01472e]/10 pb-1.5">
+                  {notesSubject} Revision Sheet
+                </h4>
+                {getSubjectNotes(notesSubject).map((bullet, idx) => (
+                  <div key={idx} className="flex gap-2.5 leading-relaxed text-[#4a5568]">
+                    <span className="text-[#01472e] font-bold">•</span>
+                    <p>{bullet}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const textToCopy = getSubjectNotes(notesSubject).join("\n");
+                    navigator.clipboard.writeText(textToCopy);
+                    setCopiedNotes(true);
+                    setTimeout(() => setCopiedNotes(false), 2000);
+                  }}
+                  className="flex-1 bg-transparent hover:bg-[#01472e]/5 border border-[#01472e]/20 text-[#01472e] font-semibold text-xs py-3 rounded-xl cursor-pointer transition-colors flex justify-center items-center gap-1.5"
+                >
+                  {copiedNotes ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-600" />
+                      <span className="text-emerald-700 font-bold">Copied!</span>
+                    </>
+                  ) : (
+                    <span>Copy to Clipboard</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowNotesModal(false)}
+                  className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                >
+                  Close Notes
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* PROGRESS MODAL */}
+      <AnimatePresence>
+        {showProgressModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-center items-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+              className="w-full max-w-lg bg-white border border-[#01472e]/20 rounded-3xl p-6 md:p-8 shadow-2xl relative z-10 text-[#01472e]"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowProgressModal(false)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                  <Flame className="w-5 h-5 text-amber-500 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-sans text-xl font-bold text-[#01472e]">
+                    Progress & Analytics
+                  </h3>
+                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block">
+                    Detailed Learning Statistics
+                  </span>
+                </div>
+              </div>
+
+              {/* Stats Cards Row */}
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <div className="bg-[#fefae0]/40 border border-[#01472e]/10 rounded-xl p-3.5 text-center">
+                  <span className="text-[10px] font-semibold text-[#01472e]/70 uppercase tracking-wider block mt-0.5">
+                    Study Time (Wk)
+                  </span>
+                  <span className="text-xl font-black text-[#01472e] block mt-1">
+                    18.5 hours
+                  </span>
+                </div>
+                <div className="bg-[#fefae0]/40 border border-[#01472e]/10 rounded-xl p-3.5 text-center">
+                  <span className="text-[10px] font-semibold text-[#01472e]/70 uppercase tracking-wider block mt-0.5">
+                    Active Streak
+                  </span>
+                  <span className="text-xl font-black text-[#01472e] block mt-1">
+                    7 Days 🔥
+                  </span>
+                </div>
+              </div>
+
+              {/* Weekly Chart Container */}
+              <div className="bg-[#fefae0]/40 border border-[#01472e]/10 rounded-2xl p-4 mb-5">
+                <span className="text-[10px] font-bold text-[#01472e]/70 uppercase tracking-wider block mb-3">
+                  Weekly Study Hours (Mon - Sun)
+                </span>
+                {/* SVG bar chart */}
+                <div className="h-28 w-full flex items-end justify-between px-2 pt-2">
+                  {[
+                    { day: "M", hrs: 2.0, hPercent: "40%" },
+                    { day: "T", hrs: 3.0, hPercent: "60%" },
+                    { day: "W", hrs: 1.5, hPercent: "30%" },
+                    { day: "T", hrs: 4.0, hPercent: "80%" },
+                    { day: "F", hrs: 2.5, hPercent: "50%" },
+                    { day: "S", hrs: 3.5, hPercent: "70%" },
+                    { day: "S", hrs: 2.0, hPercent: "40%" },
+                  ].map((d, index) => (
+                    <div key={index} className="flex flex-col items-center gap-1.5 w-8">
+                      <div className="text-[9px] font-semibold text-[#01472e]/70">{d.hrs}h</div>
+                      <div className="w-3.5 bg-[#01472e]/15 rounded-t-sm h-16 relative flex items-end">
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: d.hPercent }}
+                          className="w-full bg-[#01472e] rounded-t-sm"
+                          transition={{ delay: 0.1 * index, duration: 0.5 }}
+                        />
+                      </div>
+                      <div className="text-[10px] font-bold text-[#01472e]">{d.day}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subject Mastery Progress Bars */}
+              <div className="space-y-2.5 mb-5 max-h-36 overflow-y-auto pr-1">
+                <span className="text-[10px] font-bold text-[#01472e]/70 uppercase tracking-wider block mb-1">
+                  Subject Mastery Ratings
+                </span>
+                {dbSubjects.map((s) => (
+                  <div key={s.id} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs font-semibold text-[#4a5568]">
+                      <span>{s.name}</span>
+                      <span className="text-[#01472e] font-bold">{s.progress}%</span>
+                    </div>
+                    <div className="w-full bg-[#ccd5ae]/20 h-1.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#01472e] h-full"
+                        style={{ width: `${s.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setShowProgressModal(false)}
+                className="w-full bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200"
+              >
+                Done
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* SETTINGS & PROFILE MODAL */}
+      <AnimatePresence>
+        {showSettingsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-center items-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+              className="w-full max-w-md bg-white border border-[#01472e]/20 rounded-3xl p-6 md:p-8 shadow-2xl relative z-10 text-[#01472e]"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                  <User className="w-5 h-5 text-[#ccd5ae]" />
+                </div>
+                <div>
+                  <h3 className="font-sans text-xl font-bold text-[#01472e]">
+                    Settings & Profile
+                  </h3>
+                  <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block">
+                    Manage Preferences & Details
+                  </span>
+                </div>
+              </div>
+
+              {/* Tab Selector */}
+              <div className="flex border-b border-[#01472e]/10 mb-4 text-xs font-bold">
+                {[
+                  { id: "profile", label: "Profile" },
+                  { id: "preferences", label: "Preferences" },
+                  { id: "account", label: "Account" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSettingsTab(t.id as any)}
+                    className={`flex-grow pb-2 border-b-2 transition-all cursor-pointer ${
+                      settingsTab === t.id
+                        ? "border-[#01472e] text-[#01472e]"
+                        : "border-transparent text-[#01472e]/55 hover:text-[#01472e]"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1 scrollbar-none font-sans text-xs mb-6 text-left">
+                {settingsTab === "profile" ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="font-semibold text-[#01472e]/70 uppercase text-[10px] tracking-wider block mb-1">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editFullName}
+                        onChange={(e) => setEditFullName(e.target.value)}
+                        className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-[#01472e]/70 uppercase text-[10px] tracking-wider block mb-1">
+                        Email Address (Read-only)
+                      </label>
+                      <input
+                        type="email"
+                        value={profileData.email}
+                        readOnly
+                        className="w-full bg-[#01472e]/5 border border-[#01472e]/10 rounded-xl px-3 py-2 text-xs text-[#01472e]/60 outline-none cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-[#01472e]/70 uppercase text-[10px] tracking-wider block mb-1">
+                        Target Exam
+                      </label>
+                      <input
+                        type="text"
+                        value={editExamTarget}
+                        onChange={(e) => setEditExamTarget(e.target.value)}
+                        className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-semibold text-[#01472e]/70 uppercase text-[10px] tracking-wider block mb-1">
+                          Grade Class
+                        </label>
+                        <input
+                          type="text"
+                          value={editGradeClass}
+                          onChange={(e) => setEditGradeClass(e.target.value)}
+                          className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-semibold text-[#01472e]/70 uppercase text-[10px] tracking-wider block mb-1">
+                          Exam Date
+                        </label>
+                        <input
+                          type="date"
+                          value={editExamDate}
+                          onChange={(e) => setEditExamDate(e.target.value)}
+                          className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : settingsTab === "preferences" ? (
+                  <div className="space-y-4 pt-1">
+                    {/* Goal slider */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-semibold">
+                        <span className="text-[#01472e]/70 uppercase text-[10px] tracking-wider">
+                          Daily Study Goal Target
+                        </span>
+                        <span className="text-[#01472e]">{dailyGoalPercent}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="50"
+                        max="100"
+                        value={dailyGoalPercent}
+                        onChange={(e) => setDailyGoalPercent(parseInt(e.target.value))}
+                        className="w-full h-1.5 bg-[#ccd5ae]/30 rounded-lg appearance-none cursor-pointer accent-[#01472e]"
+                      />
+                    </div>
+
+                    {/* Dark mode toggle */}
+                    <div className="flex items-center justify-between py-2 border-t border-[#01472e]/5">
+                      <div>
+                        <span className="font-bold text-[#01472e] block">Simulate Dark Mode</span>
+                        <span className="text-[10px] text-[#4a5568]">Toggle custom darker workspace visual theme</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setMockDarkMode(!mockDarkMode);
+                          alert("Workspace styling updated. Visual elements refreshed.");
+                        }}
+                        className={`w-10 h-5.5 rounded-full p-0.5 transition-colors cursor-pointer ${
+                          mockDarkMode ? "bg-[#01472e]" : "bg-[#ccd5ae]"
+                        }`}
+                      >
+                        <div
+                          className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-transform ${
+                            mockDarkMode ? "translate-x-4.5" : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Notifications toggle */}
+                    <div className="flex items-center justify-between py-2 border-t border-[#01472e]/5">
+                      <div>
+                        <span className="font-bold text-[#01472e] block">Email Notifications</span>
+                        <span className="text-[10px] text-[#4a5568]">Receive daily study plan reminders via email</span>
+                      </div>
+                      <button
+                        onClick={() => setEmailNotifications(!emailNotifications)}
+                        className={`w-10 h-5.5 rounded-full p-0.5 transition-colors cursor-pointer ${
+                          emailNotifications ? "bg-[#01472e]" : "bg-[#ccd5ae]"
+                        }`}
+                      >
+                        <div
+                          className={`bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-transform ${
+                            emailNotifications ? "translate-x-4.5" : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4 pt-2 text-center py-6">
+                    <p className="text-xs text-[#4a5568] max-w-[280px] mx-auto">
+                      Signed in as <span className="font-bold text-[#01472e]">{profileData.email}</span>. Click below to sign out and clear active session cookies.
+                    </p>
+                    <button
+                      onClick={handleSignOut}
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-3 px-6 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200 flex justify-center items-center gap-2 mx-auto"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out of Account
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              {settingsTab !== "account" && (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowSettingsModal(false)}
+                    className="flex-1 bg-transparent hover:bg-[#01472e]/5 border border-[#01472e]/20 text-[#01472e] font-semibold text-xs py-3 rounded-xl cursor-pointer transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveSettings}
+                    className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* STICKY GOOEY BOTTOM RIGHT DASHBOARD MENU */}
       <GooeyStickyMenu
-        onNavigate={(id) => {
-          const el = document.getElementById(id);
-          el?.scrollIntoView({ behavior: "smooth" });
+        onNavigate={(action) => {
+          if (action === "dashboard") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else if (action === "active-modules" || action === "study-plan" || action === "ai-coach") {
+            const el = document.getElementById(action);
+            el?.scrollIntoView({ behavior: "smooth" });
+          } else if (action === "upload-material") {
+            setShowUploadModal(true);
+          } else if (action === "quiz") {
+            setShowQuizModal(true);
+          } else if (action === "notes") {
+            setShowNotesModal(true);
+          } else if (action === "progress") {
+            setShowProgressModal(true);
+          } else if (action === "settings") {
+            setShowSettingsModal(true);
+          }
         }}
-        onOpenProfile={() => setShowProfileModal(true)}
       />
 
     </div>

@@ -20,7 +20,7 @@ const INITIAL_STATE = {
 const ANIMATED_STATE = {
   y: -10,
   width: 210,
-  height: 220,
+  height: 380,
   borderRadius: 24,
   transition: {
     ...LOGO_SPRING,
@@ -57,10 +57,8 @@ export const SkiperGooeyFilterProvider = () => {
 
 export const GooeyStickyMenu = ({
   onNavigate,
-  onOpenProfile,
 }: {
   onNavigate?: (id: string) => void;
-  onOpenProfile?: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -103,17 +101,17 @@ export const GooeyStickyMenu = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-14 right-3 z-30 p-4 text-left w-48 space-y-2 text-[#fefae0]"
+              className="absolute bottom-14 right-3 z-30 p-4 text-left w-48 text-[#fefae0]"
             >
-              <div className="flex flex-col space-y-2 font-sans font-bold text-xs">
+              <div className="flex flex-col space-y-1.5 font-sans font-bold text-xs">
                 <TextRoll
                   onClick={() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    onNavigate?.("dashboard");
                     setIsOpen(false);
                   }}
-                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5"
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
                 >
-                  Overview
+                  Dashboard
                 </TextRoll>
 
                 <TextRoll
@@ -121,9 +119,19 @@ export const GooeyStickyMenu = ({
                     onNavigate?.("active-modules");
                     setIsOpen(false);
                   }}
-                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5"
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
                 >
-                  Active Modules
+                  My Subjects
+                </TextRoll>
+
+                <TextRoll
+                  onClick={() => {
+                    onNavigate?.("upload-material");
+                    setIsOpen(false);
+                  }}
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
+                >
+                  Upload Material
                 </TextRoll>
 
                 <TextRoll
@@ -131,9 +139,39 @@ export const GooeyStickyMenu = ({
                     onNavigate?.("study-plan");
                     setIsOpen(false);
                   }}
-                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5"
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
                 >
-                  Today's Study Plan
+                  Study Plan
+                </TextRoll>
+
+                <TextRoll
+                  onClick={() => {
+                    onNavigate?.("quiz");
+                    setIsOpen(false);
+                  }}
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
+                >
+                  Quiz
+                </TextRoll>
+
+                <TextRoll
+                  onClick={() => {
+                    onNavigate?.("notes");
+                    setIsOpen(false);
+                  }}
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
+                >
+                  Notes
+                </TextRoll>
+
+                <TextRoll
+                  onClick={() => {
+                    onNavigate?.("progress");
+                    setIsOpen(false);
+                  }}
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
+                >
+                  Progress
                 </TextRoll>
 
                 <TextRoll
@@ -141,19 +179,19 @@ export const GooeyStickyMenu = ({
                     onNavigate?.("ai-coach");
                     setIsOpen(false);
                   }}
-                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5"
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
                 >
-                  AI Study Coach
+                  AI Coach
                 </TextRoll>
 
                 <TextRoll
                   onClick={() => {
-                    onOpenProfile?.();
+                    onNavigate?.("settings");
                     setIsOpen(false);
                   }}
-                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5"
+                  className="text-[#fefae0] hover:text-[#ccd5ae] py-0.5 cursor-pointer"
                 >
-                  Student Profile
+                  Settings
                 </TextRoll>
               </div>
             </motion.div>
