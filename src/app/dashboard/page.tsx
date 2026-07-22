@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { TextRoll } from "@/components/v1/skiper58";
-import { GooeyStickyMenu } from "@/components/v1/skiper64";
 
 const ShaderBackground = dynamic(() => import("@/components/ui/ShaderBackground"), {
   ssr: false,
@@ -1856,27 +1855,6 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* STICKY GOOEY BOTTOM RIGHT DASHBOARD MENU */}
-      <GooeyStickyMenu
-        onNavigate={(action) => {
-          if (action === "dashboard") {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          } else if (action === "active-modules" || action === "study-plan" || action === "ai-coach") {
-            const el = document.getElementById(action);
-            el?.scrollIntoView({ behavior: "smooth" });
-          } else if (action === "upload-material") {
-            setShowUploadModal(true);
-          } else if (action === "quiz") {
-            setShowQuizModal(true);
-          } else if (action === "notes") {
-            setShowNotesModal(true);
-          } else if (action === "progress") {
-            setShowProgressModal(true);
-          } else if (action === "settings") {
-            setShowSettingsModal(true);
-          }
-        }}
-      />
 
     </div>
   );
