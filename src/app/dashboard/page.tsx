@@ -737,6 +737,133 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
+          {/* 2. QUICK ACCESS CARDS */}
+          <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            {/* Subjects Card */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push("/dashboard/subjects")}
+              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-[24px] p-6 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-[#ccd5ae]/30 text-[#01472e] flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  {dbSubjects.length > 3 && (
+                    <span className="text-[10px] font-bold text-[#01472e]/70 bg-[#ccd5ae]/20 px-2.5 py-1 rounded-full border border-[#01472e]/5">
+                      +{dbSubjects.length - 3} more
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
+                  Subjects
+                </h3>
+                
+                {/* List of subjects (max 3) */}
+                <div className="space-y-2 mt-4">
+                  {dbSubjects.slice(0, 3).map((subject) => (
+                    <div
+                      key={subject.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-white/50 border border-[#01472e]/5 hover:bg-white transition-all duration-200"
+                    >
+                      <div className="flex items-center gap-2 overflow-hidden mr-2">
+                        <div
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: subject.borderColor || "#01472e" }}
+                        />
+                        <span className="font-sans text-xs font-bold text-[#01472e] truncate">
+                          {subject.name}
+                        </span>
+                      </div>
+                      <span className="font-sans text-[10px] font-semibold text-[#01472e]/70 bg-[#ccd5ae]/20 px-2 py-0.5 rounded-full shrink-0">
+                        {subject.progress}%
+                      </span>
+                    </div>
+                  ))}
+                  {dbSubjects.length === 0 && (
+                    <p className="font-sans text-xs text-[#01472e]/60 italic py-2">
+                      No subjects added yet.
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push("/dashboard/subjects");
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#01472e] hover:bg-[#013522] text-[#fefae0] text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex items-center justify-center gap-1.5"
+                >
+                  <span>View Subjects</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Upload Material Card */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push("/dashboard/upload")}
+              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-[24px] p-6 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#ccd5ae]/30 text-[#01472e] flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-300">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
+                  Upload Material
+                </h3>
+                <p className="font-sans text-xs text-[#01472e]/70 leading-relaxed mt-2.5">
+                  Drop your study materials, syllabus docs, or files to automatically generate interactive practice quizzes.
+                </p>
+              </div>
+              <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#01472e] group-hover:translate-x-1 transition-transform duration-300">
+                  <span>Go to upload</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+                {/* Secondary Quick Action Button to open Modal directly */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // prevent card click navigation
+                    setShowUploadModal(true);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-[#01472e] text-[#fefae0] text-[10px] font-bold uppercase tracking-wider hover:bg-[#013522] transition-colors cursor-pointer shadow-xs z-20"
+                >
+                  Quick Upload
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Study Plan Card */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push("/dashboard/study-plan")}
+              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-[24px] p-6 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#ccd5ae]/30 text-[#01472e] flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-300">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
+                  Study Plan
+                </h3>
+                <p className="font-sans text-xs text-[#01472e]/70 leading-relaxed mt-2.5">
+                  Set dynamic daily goals, review your streak calendar, and follow structured pomodoro focus blocks.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#01472e] mt-6 group-hover:translate-x-1 transition-transform duration-300">
+                <span>View schedule</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </motion.div>
+          </motion.div>
 
         </motion.div>
 

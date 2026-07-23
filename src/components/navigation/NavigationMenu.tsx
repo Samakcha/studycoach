@@ -37,7 +37,7 @@ export default function NavigationMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle clicking outside to collapse the menu
-  useOnClickOutside(containerRef, () => {
+  useOnClickOutside(containerRef as React.RefObject<HTMLDivElement>, () => {
     setIsExpanded(false);
   });
 
