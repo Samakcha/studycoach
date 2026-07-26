@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { TextRoll } from "@/components/v1/skiper58";
+import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
+import ActivityBreakdown from "@/components/dashboard/ActivityBreakdown";
 
 const ShaderBackground = dynamic(() => import("@/components/ui/ShaderBackground"), {
   ssr: false,
@@ -79,6 +81,7 @@ interface SubjectItem {
   topicCount: number;
   lastStudied: string;
   borderColor: string;
+  pdf_uploaded?: boolean;
 }
 
 export default function Dashboard() {
@@ -382,6 +385,7 @@ export default function Dashboard() {
             topicCount: s.topic_count || 12,
             lastStudied: s.last_studied || "2 hours ago",
             borderColor: subjectColors[idx % subjectColors.length],
+            pdf_uploaded: s.pdf_uploaded || false,
           }));
         }
       }
@@ -587,78 +591,7 @@ export default function Dashboard() {
         </svg>
       </div>
 
-      {/* Sticky Top Navbar with thin bottom border (#e4e7f0) */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#fefae0]/90 border-b border-[#e4e7f0] px-4 md:px-8 py-3.5 transition-all">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#01472e] flex items-center justify-center text-[#fefae0] shadow-xs">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-display text-xl tracking-tight text-[#01472e] uppercase font-bold block leading-none">
-                StudyCoach
-              </span>
-              <span className="font-sans text-[11px] font-semibold text-[#01472e]/70 uppercase tracking-[0.1em] block mt-0.5">
-                Dashboard
-              </span>
-            </div>
-          </div>
-
-          {/* User Profile Summary Pill & Actions */}
-          <div className="flex items-center gap-3">
-
-            {/* Refresh Button */}
-            <motion.button
-              onClick={handleRefresh}
-              whileTap={{ scale: 0.95 }}
-              title="Refresh Dashboard Data"
-              className="p-2 rounded-xl border border-[#01472e]/15 bg-white/80 hover:bg-white text-[#01472e] transition-all duration-200 cursor-pointer shadow-xs"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </motion.button>
-
-            {/* Profile Drawer Trigger Pill */}
-            <motion.button
-              onClick={() => setShowSettingsModal(true)}
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-2.5 bg-white border border-[#01472e]/15 hover:border-[#01472e]/30 px-3.5 py-1.5 rounded-full shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
-            >
-              {profileData.avatarUrl ? (
-                <img
-                  src={profileData.avatarUrl}
-                  alt={profileData.fullName}
-                  className="w-6 h-6 rounded-full object-cover border border-[#01472e]/20"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-[#ccd5ae] flex items-center justify-center text-[#01472e] font-bold text-[10px]">
-                  {profileData.fullName.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <span className="text-sm font-bold text-[#01472e] hidden sm:inline-block max-w-[120px] truncate">
-                {profileData.fullName}
-              </span>
-              <span className="text-[11px] font-semibold bg-[#ccd5ae]/50 text-[#01472e] px-2 py-0.5 rounded-full">
-                {profileData.gradeClass.split(" ")[0] || "Student"}
-              </span>
-            </motion.button>
-
-            {/* Sign Out Button */}
-            <motion.button
-              onClick={handleSignOut}
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.97 }}
-              className="hidden md:flex items-center gap-1.5 bg-[#01472e] hover:bg-[#013522] text-[#fefae0] text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </motion.button>
-          </div>
-
-        </div>
-      </header>
 
       {/* Main Dashboard Container */}
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-8 relative z-10">
@@ -744,29 +677,26 @@ export default function Dashboard() {
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/dashboard/subjects")}
-              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-[24px] p-6 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
             >
               <div>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-2xl bg-[#ccd5ae]/30 text-[#01472e] flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <BookOpen className="w-6 h-6" />
-                  </div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
+                    Subjects
+                  </h3>
                   {dbSubjects.length > 3 && (
                     <span className="text-[10px] font-bold text-[#01472e]/70 bg-[#ccd5ae]/20 px-2.5 py-1 rounded-full border border-[#01472e]/5">
                       +{dbSubjects.length - 3} more
                     </span>
                   )}
                 </div>
-                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
-                  Subjects
-                </h3>
                 
                 {/* List of subjects (max 3) */}
-                <div className="space-y-2 mt-4">
+                <div className="space-y-2 mt-3">
                   {dbSubjects.slice(0, 3).map((subject) => (
                     <div
                       key={subject.id}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-white/50 border border-[#01472e]/5 hover:bg-white transition-all duration-200"
+                      className="flex items-center justify-between p-2 rounded-xl bg-white/50 border border-[#01472e]/5 hover:bg-white transition-all duration-200"
                     >
                       <div className="flex items-center gap-2 overflow-hidden mr-2">
                         <div
@@ -777,9 +707,13 @@ export default function Dashboard() {
                           {subject.name}
                         </span>
                       </div>
-                      <span className="font-sans text-[10px] font-semibold text-[#01472e]/70 bg-[#ccd5ae]/20 px-2 py-0.5 rounded-full shrink-0">
-                        {subject.progress}%
-                      </span>
+                      {subject.pdf_uploaded ? (
+                        <div className="w-5 h-5 rounded-md bg-[#01472e] text-white flex items-center justify-center shrink-0">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 rounded-md border border-[#01472e]/20 bg-transparent shrink-0" />
+                      )}
                     </div>
                   ))}
                   {dbSubjects.length === 0 && (
@@ -790,13 +724,13 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              <div className="mt-6">
+              <div className="mt-4">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push("/dashboard/subjects");
                   }}
-                  className="w-full py-2.5 rounded-xl bg-[#01472e] hover:bg-[#013522] text-[#fefae0] text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex items-center justify-center gap-1.5"
+                  className="w-full py-2 rounded-xl bg-[#01472e] hover:bg-[#013522] text-[#fefae0] text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex items-center justify-center gap-1.5"
                 >
                   <span>View Subjects</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -809,20 +743,17 @@ export default function Dashboard() {
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/dashboard/upload")}
-              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-[24px] p-6 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
             >
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#ccd5ae]/30 text-[#01472e] flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-300">
-                  <UploadCloud className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
+                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight mb-2">
                   Upload Material
                 </h3>
-                <p className="font-sans text-xs text-[#01472e]/70 leading-relaxed mt-2.5">
+                <p className="font-sans text-xs text-[#01472e]/70 leading-relaxed mt-2">
                   Drop your study materials, syllabus docs, or files to automatically generate interactive practice quizzes.
                 </p>
               </div>
-              <div className="flex items-center justify-between mt-6">
+              <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#01472e] group-hover:translate-x-1 transition-transform duration-300">
                   <span>Go to upload</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -845,24 +776,33 @@ export default function Dashboard() {
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push("/dashboard/study-plan")}
-              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-[24px] p-6 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+              className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
             >
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#ccd5ae]/30 text-[#01472e] flex items-center justify-center mb-5 group-hover:scale-105 transition-transform duration-300">
-                  <Calendar className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight">
+                <h3 className="font-display text-lg font-bold text-[#01472e] tracking-tight mb-2">
                   Study Plan
                 </h3>
-                <p className="font-sans text-xs text-[#01472e]/70 leading-relaxed mt-2.5">
+                <p className="font-sans text-xs text-[#01472e]/70 leading-relaxed mt-2">
                   Set dynamic daily goals, review your streak calendar, and follow structured pomodoro focus blocks.
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#01472e] mt-6 group-hover:translate-x-1 transition-transform duration-300">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#01472e] mt-4 group-hover:translate-x-1 transition-transform duration-300">
                 <span>View schedule</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </motion.div>
+          </motion.div>
+
+          {/* 3. STUDY ACTIVITY BOTTOM SECTION */}
+          <motion.div variants={itemVariants} className="w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-6">
+              <div className="col-span-2">
+                <ActivityHeatmap userId={user.id} />
+              </div>
+              <div className="col-span-1">
+                <ActivityBreakdown userId={user.id} />
+              </div>
+            </div>
           </motion.div>
 
         </motion.div>

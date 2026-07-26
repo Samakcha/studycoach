@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Camera, User, AlertCircle, GraduationCap, Target, Calendar, ArrowRight, Check, Star, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getCookie, setCookie } from "@/lib/cookieHelper";
 import { InteractiveRobotSpline } from "@/components/ui/interactive-3d-robot";
 
 export default function Onboarding() {
@@ -19,6 +18,9 @@ export default function Onboarding() {
   const [examTarget, setExamTarget] = useState("");
   const [examDate, setExamDate] = useState("");
   
+  const [exams, setExams] = useState<any[]>([]);
+  const [selectedExamId, setSelectedExamId] = useState("");
+
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -40,37 +42,36 @@ export default function Onboarding() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Fetch logged in user and prefill full name from metadata if available
+  // Fetch logged in user and exams on mount
   useEffect(() => {
-    async function loadUser() {
-      let user: any = null;
+    async function initOnboarding() {
       try {
-        const { data } = await supabase.auth.getUser();
-        user = data?.user;
-      } catch (err) {
-        console.warn("Supabase user fetch failed in onboarding, checking mock cookie...", err);
-      }
-
-      if (!user) {
-        const mockUserCookie = getCookie("studycoach_mock_user");
-        if (mockUserCookie) {
-          try {
-            user = JSON.parse(decodeURIComponent(mockUserCookie));
-          } catch (e) {
-            console.error("Failed to parse mock cookie in onboarding", e);
-          }
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          setError("No authenticated user found. Please log in.");
+          router.push("/sign-in");
+          return;
         }
-      }
 
-      if (user) {
         setCurrentUser(user);
         if (user.user_metadata?.full_name) {
           setFullName(user.user_metadata.full_name);
         }
+
+        const { data: examsData, error: examsError } = await supabase
+          .from("exams")
+          .select("*");
+
+        if (examsError) {
+          throw new Error(`Failed to load exams: ${examsError.message}`);
+        }
+        setExams(examsData || []);
+      } catch (err: any) {
+        setError(err?.message || "Failed to load initial onboarding data.");
       }
     }
-    loadUser();
-  }, [supabase]);
+    initOnboarding();
+  }, [supabase, router]);
 
   const triggerFileSelect = () => {
     fileInputRef.current?.click();
@@ -94,39 +95,13 @@ export default function Onboarding() {
       setError("No authenticated user found. Please log in.");
       return;
     }
+    if (!selectedExamId) {
+      setError("Please select an exam target.");
+      return;
+    }
 
     setLoading(true);
     setError(null);
-
-    // If active session is a mock user, update cookie/localStorage and redirect directly
-    const isMockUser = currentUser.id?.startsWith("mock-");
-    if (isMockUser) {
-      console.info("Updating mock profile data.");
-      const mockUser = {
-        ...currentUser,
-        user_metadata: {
-          ...currentUser.user_metadata,
-          full_name: fullName,
-        },
-        avatar_url: previewUrl || "",
-        grade_class: gradeClass,
-        exam_target: examTarget,
-        exam_date: examDate,
-        onboarding_completed: true,
-      };
-
-      setCookie("studycoach_mock_user", JSON.stringify(mockUser), 7);
-
-      if (typeof window !== "undefined") {
-        const existingMockUsersStr = localStorage.getItem("studycoach_mock_users");
-        const existingMockUsers = existingMockUsersStr ? JSON.parse(existingMockUsersStr) : {};
-        existingMockUsers[(currentUser.email || "demo@studycoach.com").toLowerCase()] = mockUser;
-        localStorage.setItem("studycoach_mock_users", JSON.stringify(existingMockUsers));
-      }
-
-      router.push("/dashboard");
-      return;
-    }
 
     try {
       let finalAvatarUrl = "";
@@ -155,72 +130,75 @@ export default function Onboarding() {
         finalAvatarUrl = data.publicUrl;
       }
 
-      // 2. Update current user profile in users table
+      // Step 1: Check if user exists in public.users
+      const { data: existingUser, error: userFetchError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      // Step 2: If user doesn't exist, create them
+      if (!existingUser) {
+        const { error: userCreateError } = await supabase
+          .from('users')
+          .insert({
+            id: currentUser.id,
+            email: currentUser.email,
+            name: fullName,
+            onboarding_completed: false
+          });
+        if (userCreateError) throw userCreateError;
+      }
+
+      // Step 3: Then update the user profile
       const { error: profileError } = await supabase
-        .from("users")
+        .from('users')
         .update({
-          avatar_url: finalAvatarUrl || null,
           name: fullName,
+          avatar_url: finalAvatarUrl || null,
           grade_class: gradeClass,
           exam_target: examTarget,
-          onboarding_completed: true,
+          onboarding_completed: true
         })
-        .eq("id", currentUser.id);
+        .eq('id', currentUser.id);
 
       if (profileError) {
         throw new Error(`Failed to update profile details: ${profileError.message}`);
       }
 
-      // 3. Insert into subjects table if exam target and date are selected
-      if (examTarget && examDate) {
-        const { error: subjectError } = await supabase
-          .from("subjects")
-          .insert({
-            name: examTarget,
-            exam_date: examDate,
-            user_id: currentUser.id,
-          });
+      // 3. Fetch exam subjects for the selected exam
+      const { data: examSubjects, error: fetchSubjectsError } = await supabase
+        .from("exam_subjects")
+        .select("*")
+        .eq("exam_id", selectedExamId);
 
-        if (subjectError) {
-          throw new Error(`Failed to initialize target subject: ${subjectError.message}`);
+      if (fetchSubjectsError) {
+        throw new Error(`Failed to retrieve exam subjects: ${fetchSubjectsError.message}`);
+      }
+
+      // 4. Insert a row into public.subjects for each exam subject
+      if (examSubjects && examSubjects.length > 0) {
+        const subjectsToInsert = examSubjects.map((subject) => ({
+          user_id: currentUser.id,
+          exam_id: selectedExamId,
+          name: subject.name,
+          exam_date: examDate,
+          pdf_uploaded: false,
+        }));
+
+        const { error: insertSubjectsError } = await supabase
+          .from("subjects")
+          .insert(subjectsToInsert);
+
+        if (insertSubjectsError) {
+          throw new Error(`Failed to initialize subjects: ${insertSubjectsError.message}`);
         }
       }
 
-      // Refresh page or router to update middleware session state
       router.push("/dashboard");
     } catch (err: any) {
-      const isFetchError = err?.message?.includes("fetch") || err?.message?.includes("NetworkError") || err?.message?.includes("Failed to fetch") || err?.message?.includes("Avatar upload failed");
-
-      if (isFetchError) {
-        console.warn("Supabase onboarding update failed, falling back to Demo Mode:", err.message);
-        
-        const mockUser = {
-          id: currentUser.id?.startsWith("mock-") ? currentUser.id : `mock-${currentUser.id}`,
-          email: currentUser.email || "demo@studycoach.com",
-          user_metadata: {
-            full_name: fullName,
-          },
-          avatar_url: previewUrl || "",
-          grade_class: gradeClass,
-          exam_target: examTarget,
-          exam_date: examDate,
-          onboarding_completed: true,
-        };
-
-        setCookie("studycoach_mock_user", JSON.stringify(mockUser), 7);
-
-        if (typeof window !== "undefined") {
-          const existingMockUsersStr = localStorage.getItem("studycoach_mock_users");
-          const existingMockUsers = existingMockUsersStr ? JSON.parse(existingMockUsersStr) : {};
-          existingMockUsers[(currentUser.email || "demo@studycoach.com").toLowerCase()] = mockUser;
-          localStorage.setItem("studycoach_mock_users", JSON.stringify(existingMockUsers));
-        }
-
-        router.push("/dashboard");
-      } else {
-        setError(err?.message || "An unexpected error occurred. Please try again.");
-        setLoading(false);
-      }
+      setError(err?.message || "An unexpected error occurred. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -379,15 +357,21 @@ export default function Onboarding() {
                   <select
                     id="examTarget"
                     required
-                    value={examTarget}
-                    onChange={(e) => setExamTarget(e.target.value)}
+                    value={selectedExamId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setSelectedExamId(id);
+                      const matched = exams.find((ex) => ex.id === id);
+                      setExamTarget(matched ? matched.title : "");
+                    }}
                     className="w-full bg-transparent border-0 p-0 pr-8 text-xs font-semibold text-[#01472e] focus:outline-none focus:ring-0 cursor-pointer appearance-none"
                   >
                     <option value="" className="bg-white">Select your exam</option>
-                    <option value="JEE Main/Advanced" className="bg-white">JEE Main/Advanced</option>
-                    <option value="NEET" className="bg-white">NEET</option>
-                    <option value="Board Exams" className="bg-white">Board Exams</option>
-                    <option value="Other Competitive Exam" className="bg-white">Other Competitive Exam</option>
+                    {exams.map((exam) => (
+                      <option key={exam.id} value={exam.id} className="bg-white">
+                        {exam.title}
+                      </option>
+                    ))}
                   </select>
                   <ChevronDown className="absolute right-0 w-4 h-4 text-[#01472e]/40 pointer-events-none" />
                 </div>
