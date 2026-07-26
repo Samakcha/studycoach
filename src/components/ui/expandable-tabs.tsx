@@ -49,7 +49,7 @@ const spanVariants = {
   exit: { opacity: 0 },
 };
 
-const transition = { type: "spring", bounce: 0, duration: 0.3 };
+const transition = { type: "spring", bounce: 0, duration: 0.3 } as const;
 
 export function ExpandableTabs({
   tabs,

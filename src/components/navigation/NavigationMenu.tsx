@@ -74,9 +74,10 @@ export default function NavigationMenu() {
 
     if (index === null) return;
     const tab = TABS[index];
-    if (tab && tab.href) {
+    if (tab && typeof tab.href === "string") {
+      const href = tab.href;
       startTransition(() => {
-        router.push(tab.href);
+        router.push(href);
       });
     }
   };
