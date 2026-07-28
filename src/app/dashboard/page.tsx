@@ -4,10 +4,13 @@ import dynamic from "next/dynamic";
 import { TextRoll } from "@/components/v1/skiper58";
 import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
 import ActivityBreakdown from "@/components/dashboard/ActivityBreakdown";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
 const ShaderBackground = dynamic(() => import("@/components/ui/ShaderBackground"), {
   ssr: false,
 });
+import NeuralBackground from "@/components/ui/flow-field-background";
+
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -93,6 +96,46 @@ export default function Dashboard() {
   const [dbSubjects, setDbSubjects] = useState<SubjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Skeleton fade-out state and effect
+  const [showSkeleton, setShowSkeleton] = useState(true);
+  const [skeletonOpacity, setSkeletonOpacity] = useState(1);
+
+  useEffect(() => {
+    if (!loading) {
+      setSkeletonOpacity(0);
+      const timer = setTimeout(() => {
+        setShowSkeleton(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setShowSkeleton(true);
+      setSkeletonOpacity(1);
+    }
+  }, [loading]);
+
+  // Audio playback for click sound
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const audio = new Audio("/sounds/click.mp3");
+      audio.volume = 0.15;
+      audio.preload = "auto";
+      audioRef.current = audio;
+    }
+  }, []);
+
+  const playClickSound = () => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      } catch (e) {}
+    }
+  };
+
+
 
   // AI Coach state
   const [aiInput, setAiInput] = useState("");
@@ -565,13 +608,20 @@ export default function Dashboard() {
   // Completed tasks calculation for progress bar
   const completedTasksCount = tasks.filter((t) => t.completed).length;
 
-  if (loading) {
+  if (loading && !profileData) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center bg-[#fefae0] font-sans">
-        <div className="w-10 h-10 rounded-full border-2 border-[#01472e]/20 border-t-[#01472e] animate-spin mb-4" />
-        <div className="font-sans font-semibold text-[11px] text-[#01472e]/70 uppercase tracking-[0.1em] animate-pulse">
-          Loading Dashboard...
+      <div className="relative min-h-screen bg-transparent text-[#01472e] select-none overflow-x-hidden font-sans pb-16">
+        <div className="pointer-events-none fixed inset-0 z-[999] opacity-[0.04] select-none">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <filter id="noiseFilter">
+              <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+          </svg>
         </div>
+        <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-8 relative z-10">
+          <DashboardSkeleton />
+        </main>
       </div>
     );
   }
@@ -579,7 +629,7 @@ export default function Dashboard() {
   if (!user || !profileData) return null;
 
   return (
-    <div className="relative min-h-screen bg-[#fefae0] text-[#01472e] select-none overflow-x-hidden font-sans pb-16">
+    <div className="relative min-h-screen bg-transparent text-[#01472e] select-none overflow-x-hidden font-sans pb-16">
 
       {/* Subtle 4% opacity SVG fractal noise texture overlay */}
       <div className="pointer-events-none fixed inset-0 z-[999] opacity-[0.04] select-none">
@@ -595,13 +645,25 @@ export default function Dashboard() {
 
       {/* Main Dashboard Container */}
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-6 md:pt-8 relative z-10">
+        <div className="relative w-full">
+          {showSkeleton && (
+            <div
+              style={{
+                opacity: skeletonOpacity,
+                transition: "opacity 300ms ease",
+              }}
+              className="absolute inset-0 z-30 pointer-events-none w-full"
+            >
+              <DashboardSkeleton />
+            </div>
+          )}
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-6 md:space-y-8"
-        >
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6 md:space-y-8"
+          >
 
           {/* 1. HERO BANNER */}
           <motion.div variants={itemVariants} className="w-full">
@@ -676,7 +738,10 @@ export default function Dashboard() {
             <motion.div
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => router.push("/dashboard/subjects")}
+              onClick={() => {
+                playClickSound();
+                router.push("/dashboard/subjects");
+              }}
               className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
             >
               <div>
@@ -728,9 +793,10 @@ export default function Dashboard() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    playClickSound();
                     router.push("/dashboard/subjects");
                   }}
-                  className="w-full py-2 rounded-xl bg-[#01472e] hover:bg-[#013522] text-[#fefae0] text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex items-center justify-center gap-1.5"
+                  className="w-full py-2 rounded-xl bg-[#01472e] hover:bg-[#013522] text-[#E6E8C2] text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md flex items-center justify-center gap-1.5"
                 >
                   <span>View Subjects</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -742,7 +808,10 @@ export default function Dashboard() {
             <motion.div
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => router.push("/dashboard/upload")}
+              onClick={() => {
+                playClickSound();
+                router.push("/dashboard/upload");
+              }}
               className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
             >
               <div>
@@ -762,9 +831,10 @@ export default function Dashboard() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation(); // prevent card click navigation
+                    playClickSound();
                     setShowUploadModal(true);
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-[#01472e] text-[#fefae0] text-[10px] font-bold uppercase tracking-wider hover:bg-[#013522] transition-colors cursor-pointer shadow-xs z-20"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#01472e] text-[#E6E8C2] text-[10px] font-bold uppercase tracking-wider hover:bg-[#013522] transition-colors cursor-pointer shadow-xs z-20"
                 >
                   Quick Upload
                 </button>
@@ -775,7 +845,10 @@ export default function Dashboard() {
             <motion.div
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => router.push("/dashboard/study-plan")}
+              onClick={() => {
+                playClickSound();
+                router.push("/dashboard/study-plan");
+              }}
               className="bg-white/70 backdrop-blur-xs border border-[#01472e]/10 hover:border-[#01472e]/25 rounded-2xl p-4 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between group"
             >
               <div>
@@ -806,8 +879,8 @@ export default function Dashboard() {
           </motion.div>
 
         </motion.div>
-
-      </main>
+      </div>
+    </main>
 
       {/* UPLOAD MATERIAL MODAL */}
       <AnimatePresence>
@@ -833,13 +906,13 @@ export default function Dashboard() {
                   setUploadProgress(0);
                   setIsUploading(false);
                 }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#E6E8C2] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#E6E8C2] flex items-center justify-center">
                   <UploadCloud className="w-5 h-5 text-[#ccd5ae]" />
                 </div>
                 <div>
@@ -858,7 +931,7 @@ export default function Dashboard() {
                     const input = document.getElementById("file-upload-input");
                     input?.click();
                   }}
-                  className="border-2 border-dashed border-[#01472e]/25 hover:border-[#01472e]/55 rounded-2xl p-8 text-center cursor-pointer transition-colors bg-[#fefae0]/20 hover:bg-[#fefae0]/40 flex flex-col items-center justify-center space-y-3"
+                  className="border-2 border-dashed border-[#01472e]/25 hover:border-[#01472e]/55 rounded-2xl p-8 text-center cursor-pointer transition-colors bg-[#E6E8C2]/20 hover:bg-[#E6E8C2]/40 flex flex-col items-center justify-center space-y-3"
                 >
                   <div className="w-12 h-12 rounded-full bg-[#ccd5ae]/30 flex items-center justify-center text-[#01472e]">
                     <UploadCloud className="w-6 h-6" />
@@ -914,7 +987,7 @@ export default function Dashboard() {
                     </button>
                     <button
                       onClick={handleUploadSubmit}
-                      className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                      className="flex-1 bg-[#01472e] text-[#E6E8C2] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                     >
                       Generate Module
                     </button>
@@ -951,13 +1024,13 @@ export default function Dashboard() {
                   setSelectedAnswerIdx(null);
                   setQuizScore(0);
                 }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#E6E8C2] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#E6E8C2] flex items-center justify-center">
                   <Award className="w-5 h-5 text-[#ccd5ae]" />
                 </div>
                 <div>
@@ -983,7 +1056,7 @@ export default function Dashboard() {
                           setQuizSubject(s.name);
                           setQuizStep("question");
                         }}
-                        className="w-full bg-[#fefae0]/40 hover:bg-[#ccd5ae]/35 border border-[#01472e]/10 p-3.5 rounded-xl text-left font-sans text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-between group"
+                        className="w-full bg-[#E6E8C2]/40 hover:bg-[#ccd5ae]/35 border border-[#01472e]/10 p-3.5 rounded-xl text-left font-sans text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-between group"
                       >
                         <span>{s.name}</span>
                         <ArrowRight className="w-4 h-4 text-[#01472e]/40 group-hover:translate-x-0.5 transition-transform" />
@@ -1010,7 +1083,7 @@ export default function Dashboard() {
 
                       <div className="space-y-2">
                         {currentQuestion.options.map((option, idx) => {
-                          let optionClass = "border-[#01472e]/10 bg-white hover:bg-[#fefae0]/40";
+                          let optionClass = "border-[#01472e]/10 bg-white hover:bg-[#E6E8C2]/40";
                           if (selectedAnswerIdx !== null) {
                             if (idx === currentQuestion.answer) {
                               optionClass = "border-emerald-500 bg-emerald-50 text-emerald-950 font-semibold";
@@ -1049,7 +1122,7 @@ export default function Dashboard() {
                               setSelectedAnswerIdx(null);
                             }
                           }}
-                          className="w-full bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200 text-center"
+                          className="w-full bg-[#01472e] text-[#E6E8C2] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200 text-center"
                         >
                           {isLastQuestion ? "View Scorecard" : "Next Question"}
                         </button>
@@ -1098,7 +1171,7 @@ export default function Dashboard() {
                         setSelectedAnswerIdx(null);
                         setQuizScore(0);
                       }}
-                      className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                      className="flex-1 bg-[#01472e] text-[#E6E8C2] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                     >
                       Done
                     </button>
@@ -1132,13 +1205,13 @@ export default function Dashboard() {
                   setShowNotesModal(false);
                   setCopiedNotes(false);
                 }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#E6E8C2] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#E6E8C2] flex items-center justify-center">
                   <FileText className="w-5 h-5 text-[#ccd5ae]" />
                 </div>
                 <div>
@@ -1162,8 +1235,8 @@ export default function Dashboard() {
                     }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all duration-150 cursor-pointer flex-shrink-0 ${
                       notesSubject === s.name
-                        ? "bg-[#01472e] text-[#fefae0] border-[#01472e]"
-                        : "bg-[#fefae0]/40 text-[#01472e] border-[#01472e]/10 hover:bg-[#ccd5ae]/30"
+                        ? "bg-[#01472e] text-[#E6E8C2] border-[#01472e]"
+                        : "bg-[#E6E8C2]/40 text-[#01472e] border-[#01472e]/10 hover:bg-[#ccd5ae]/30"
                     }`}
                   >
                     {s.name}
@@ -1172,7 +1245,7 @@ export default function Dashboard() {
               </div>
 
               {/* Notes Content */}
-              <div className="bg-[#fefae0]/60 border border-[#01472e]/10 rounded-2xl p-5 mb-5 max-h-72 overflow-y-auto space-y-4 font-sans text-xs scrollbar-none">
+              <div className="bg-[#E6E8C2]/60 border border-[#01472e]/10 rounded-2xl p-5 mb-5 max-h-72 overflow-y-auto space-y-4 font-sans text-xs scrollbar-none">
                 <h4 className="text-sm font-bold text-[#01472e] uppercase tracking-wider text-[11px] border-b border-[#01472e]/10 pb-1.5">
                   {notesSubject} Revision Sheet
                 </h4>
@@ -1205,7 +1278,7 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setShowNotesModal(false)}
-                  className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                  className="flex-1 bg-[#01472e] text-[#E6E8C2] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                 >
                   Close Notes
                 </button>
@@ -1234,13 +1307,13 @@ export default function Dashboard() {
               {/* Close Button */}
               <button
                 onClick={() => setShowProgressModal(false)}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#E6E8C2] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#E6E8C2] flex items-center justify-center">
                   <Flame className="w-5 h-5 text-amber-500 animate-pulse" />
                 </div>
                 <div>
@@ -1255,7 +1328,7 @@ export default function Dashboard() {
 
               {/* Stats Cards Row */}
               <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="bg-[#fefae0]/40 border border-[#01472e]/10 rounded-xl p-3.5 text-center">
+                <div className="bg-[#E6E8C2]/40 border border-[#01472e]/10 rounded-xl p-3.5 text-center">
                   <span className="text-[10px] font-semibold text-[#01472e]/70 uppercase tracking-wider block mt-0.5">
                     Study Time (Wk)
                   </span>
@@ -1263,7 +1336,7 @@ export default function Dashboard() {
                     18.5 hours
                   </span>
                 </div>
-                <div className="bg-[#fefae0]/40 border border-[#01472e]/10 rounded-xl p-3.5 text-center">
+                <div className="bg-[#E6E8C2]/40 border border-[#01472e]/10 rounded-xl p-3.5 text-center">
                   <span className="text-[10px] font-semibold text-[#01472e]/70 uppercase tracking-wider block mt-0.5">
                     Active Streak
                   </span>
@@ -1274,7 +1347,7 @@ export default function Dashboard() {
               </div>
 
               {/* Weekly Chart Container */}
-              <div className="bg-[#fefae0]/40 border border-[#01472e]/10 rounded-2xl p-4 mb-5">
+              <div className="bg-[#E6E8C2]/40 border border-[#01472e]/10 rounded-2xl p-4 mb-5">
                 <span className="text-[10px] font-bold text-[#01472e]/70 uppercase tracking-wider block mb-3">
                   Weekly Study Hours (Mon - Sun)
                 </span>
@@ -1328,7 +1401,7 @@ export default function Dashboard() {
 
               <button
                 onClick={() => setShowProgressModal(false)}
-                className="w-full bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200"
+                className="w-full bg-[#01472e] text-[#E6E8C2] font-semibold text-xs py-3 rounded-xl cursor-pointer shadow-xs hover:shadow-md transition-all duration-200"
               >
                 Done
               </button>
@@ -1356,13 +1429,13 @@ export default function Dashboard() {
               {/* Close Button */}
               <button
                 onClick={() => setShowSettingsModal(false)}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#fefae0] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#E6E8C2] flex items-center justify-center border border-[#01472e]/10 text-[#01472e] hover:bg-[#ccd5ae]/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#fefae0] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#01472e] text-[#E6E8C2] flex items-center justify-center">
                   <User className="w-5 h-5 text-[#ccd5ae]" />
                 </div>
                 <div>
@@ -1408,7 +1481,7 @@ export default function Dashboard() {
                         type="text"
                         value={editFullName}
                         onChange={(e) => setEditFullName(e.target.value)}
-                        className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                        className="w-full bg-[#E6E8C2]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
                       />
                     </div>
                     <div>
@@ -1430,7 +1503,7 @@ export default function Dashboard() {
                         type="text"
                         value={editExamTarget}
                         onChange={(e) => setEditExamTarget(e.target.value)}
-                        className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                        className="w-full bg-[#E6E8C2]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -1442,7 +1515,7 @@ export default function Dashboard() {
                           type="text"
                           value={editGradeClass}
                           onChange={(e) => setEditGradeClass(e.target.value)}
-                          className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                          className="w-full bg-[#E6E8C2]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
                         />
                       </div>
                       <div>
@@ -1453,7 +1526,7 @@ export default function Dashboard() {
                           type="date"
                           value={editExamDate}
                           onChange={(e) => setEditExamDate(e.target.value)}
-                          className="w-full bg-[#fefae0]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
+                          className="w-full bg-[#E6E8C2]/40 border border-[#01472e]/15 rounded-xl px-3 py-2 text-xs text-[#01472e] focus:outline-none focus:border-[#01472e]"
                         />
                       </div>
                     </div>
@@ -1548,7 +1621,7 @@ export default function Dashboard() {
                   </button>
                   <button
                     onClick={handleSaveSettings}
-                    className="flex-1 bg-[#01472e] text-[#fefae0] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
+                    className="flex-1 bg-[#01472e] text-[#E6E8C2] font-semibold text-xs py-3 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200"
                   >
                     Save Changes
                   </button>

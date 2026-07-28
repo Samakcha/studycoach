@@ -85,7 +85,7 @@ export default function SubjectsPage() {
   }, [supabase, router]);
 
   return (
-    <main className="min-h-screen bg-[#fefae0] text-[#01472e] p-6 md:p-12 pb-24 relative select-none">
+    <main className="min-h-screen bg-[#E6E8C2] text-[#01472e] p-6 md:p-12 pb-24 relative select-none">
       {/* Fractal noise overlay */}
       <div className="pointer-events-none fixed inset-0 z-10 opacity-[0.03] select-none">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">

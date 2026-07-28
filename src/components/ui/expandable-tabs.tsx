@@ -81,45 +81,12 @@ export function ExpandableTabs({
     }
   }, []);
 
-  const playSyntheticClick = () => {
-    try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextClass) return;
-      const ctx = new AudioContextClass();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.type = "sine";
-      const now = ctx.currentTime;
-      
-      // Quick, soft pop sound: frequency sweep from 1000Hz to 150Hz in 40ms
-      osc.frequency.setValueAtTime(1000, now);
-      osc.frequency.exponentialRampToValueAtTime(150, now + 0.04);
-      
-      gain.gain.setValueAtTime(0.04, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-      
-      osc.start(now);
-      osc.stop(now + 0.04);
-    } catch (e) {}
-  };
-
   const playClickSound = () => {
     if (audioRef.current) {
       try {
         audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(() => {
-          // Fallback to Web Audio API synthesized click if browser blocks or file fails
-          playSyntheticClick();
-        });
-      } catch (e) {
-        playSyntheticClick();
-      }
-    } else {
-      playSyntheticClick();
+        audioRef.current.play().catch(() => {});
+      } catch (e) {}
     }
   };
 

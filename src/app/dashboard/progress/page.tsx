@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function ProgressPage() {
   return (
-    <main className="flex-grow flex flex-col items-center justify-center p-8 bg-[#fefae0] min-h-screen text-[#01472e] select-none relative">
+    <main className="flex-grow flex flex-col items-center justify-center p-8 bg-[#E6E8C2] min-h-screen text-[#01472e] select-none relative">
       {/* Fractal noise overlay */}
       <div className="pointer-events-none fixed inset-0 z-10 opacity-[0.03] select-none">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">

@@ -27,7 +27,7 @@ interface Subject {
 export default function UploadPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#fefae0] text-[#01472e] flex items-center justify-center">
+      <main className="min-h-screen bg-[#E6E8C2] text-[#01472e] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[#01472e]" />
       </main>
     }>
@@ -227,7 +227,7 @@ function UploadPageContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fefae0] text-[#01472e] p-6 md:p-12 pb-24 relative select-none">
+    <main className="min-h-screen bg-[#E6E8C2] text-[#01472e] p-6 md:p-12 pb-24 relative select-none">
       {/* Fractal noise overlay */}
       <div className="pointer-events-none fixed inset-0 z-10 opacity-[0.03] select-none">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">

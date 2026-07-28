@@ -102,7 +102,7 @@ export default function EarthyHero({ revealed = false }: EarthyHeroProps) {
         className="flow-art-container relative flex min-h-screen w-full flex-col justify-between px-8 md:px-16 pt-32 pb-32 will-change-transform"
         style={{ backgroundColor: "#ccd5ae", transformOrigin: "bottom left" }}
       >
-        
+
         {/* Hero Centerpiece: Massive 'Anton' text */}
         <div className="flex-grow flex flex-col justify-center items-center py-12 relative z-10">
           <h1 
