@@ -10,12 +10,12 @@ export default function AnimatedStartButton() {
 
   return (
     <Link 
-      href="/sign-up" 
+      href="/sign-in" 
       className="inline-block cursor-pointer pointer-events-auto"
     >
       <motion.div
         initial={{ width: 44, height: 44 }}
-        whileHover={{ width: 140 }}
+        whileHover={{ width: 155 }}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -36,7 +36,7 @@ export default function AnimatedStartButton() {
         >
           <ArrowRight className="text-white w-4 h-4" />
         </motion.div>
-
+ 
         <motion.div
           className="w-full flex justify-center items-center"
           initial={{ opacity: 0 }}
@@ -44,7 +44,7 @@ export default function AnimatedStartButton() {
           transition={{ duration: 0.2, delay: isHovered ? 0.1 : 0 }}
         >
           <span className="text-white text-[10px] font-bold uppercase tracking-[0.25em] whitespace-nowrap pl-1">
-            Start Now
+            Log In Now
           </span>
         </motion.div>
       </motion.div>
