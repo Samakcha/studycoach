@@ -6,9 +6,10 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Check, X } from "lucide-react";
 import EarthyScrollReveal from "./EarthyScrollReveal";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function EarthyCTA() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -108,27 +109,26 @@ export default function EarthyCTA() {
 
               {/* Premium Buttons with Framer Motion Hovers */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4.5 w-full sm:w-auto font-sans relative z-10">
-                <Link href="/sign-up" className="w-full sm:w-auto">
-                  <motion.button 
-                    whileHover={{ 
-                      scale: 1.05, 
-                      y: -2,
-                      backgroundColor: "#01472e",
-                      color: "#fefae0",
-                      borderColor: "#01472e",
-                      boxShadow: "0 20px 40px -10px rgba(1, 71, 46, 0.3)" 
-                    }}
-                    whileTap={{ scale: 0.98, y: 0 }}
-                    className="w-full text-forest font-bold uppercase tracking-[0.25em] text-[10px] md:text-xs px-8 py-4.5 rounded-full shadow-lg border border-transparent"
-                    style={{ 
-                      backgroundColor: "#ccd5ae", 
-                      color: "#01472e",
-                      cursor: "pointer"
-                    }}
-                  >
-                    GET STARTED FREE
-                  </motion.button>
-                </Link>
+                <motion.button 
+                  onClick={() => router.push("/sign-up")}
+                  whileHover={{ 
+                    scale: 1.05, 
+                    y: -2,
+                    backgroundColor: "#01472e",
+                    color: "#fefae0",
+                    borderColor: "#01472e",
+                    boxShadow: "0 20px 40px -10px rgba(1, 71, 46, 0.3)" 
+                  }}
+                  whileTap={{ scale: 0.98, y: 0 }}
+                  className="w-full sm:w-auto text-forest font-bold uppercase tracking-[0.25em] text-[10px] md:text-xs px-8 py-4.5 rounded-full shadow-lg border border-transparent"
+                  style={{ 
+                    backgroundColor: "#ccd5ae", 
+                    color: "#01472e",
+                    cursor: "pointer"
+                  }}
+                >
+                  GET STARTED FREE
+                </motion.button>
                 
                 <motion.button 
                   onClick={handleViewDemo}
